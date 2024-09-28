@@ -35,3 +35,29 @@ def notify_player(bot: Bot, player_id: int, message: str) -> None:
         logging.info(f"Sent notification to player {player_id}")
     except TelegramError as e:
         logging.error(f"Failed to notify player {player_id}: {e}")
+        
+
+
+def notify_entry(player_id, is_group):
+    """
+    Sends a notification to the player about entering the game world,
+    with appropriate buttons based on group status.
+    
+    :param player_id: ID of the player
+    :param is_group: Boolean indicating if the player is in a group
+    """
+    if is_group:
+        keyboard = [
+            [InlineKeyboardButton("Inventory", callback_data='inventory'),
+             InlineKeyboardButton("Status", callback_data='status')],
+            [InlineKeyboardButton("Group Status", callback_data='group_status')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        notify_player(player_id, "You and your team have entered the island world together!", reply_markup)
+    else:
+        keyboard = [
+            [InlineKeyboardButton("Inventory", callback_data='inventory'),
+             InlineKeyboardButton("Status", callback_data='status')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        notify_player(player_id, "You have entered the island world alone. What will you do next?", reply_markup)
