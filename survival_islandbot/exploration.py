@@ -1,14 +1,15 @@
 import random
 from database import update_resources, get_resources
-from utils import notify_player
+from utils import notify_player, notify_entry
 from combat import engage_combat
 
-def explore_area(player_id, area_name):
+def explore_area(player_id, area_name, is_group=False):
     """
     Allows the player to explore a specified area and encounter random events.
 
     :param player_id: ID of the player
     :param area_name: Name of the area to explore (e.g., 'forest', 'beach')
+    :param is_group: Boolean indicating if the player is in a group
     :return: Exploration result
     """
     events = {
@@ -22,6 +23,7 @@ def explore_area(player_id, area_name):
         enemy = random_event.split(" ")[2].strip("!")
         return engage_combat(player_id, enemy)
     else:
+        notify_entry(player_id, is_group)  # Notify about entry into the world
         return handle_resource_event(player_id, random_event)
 
 def handle_resource_event(player_id, event):
