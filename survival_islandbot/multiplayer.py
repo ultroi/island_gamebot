@@ -1,6 +1,9 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from database import get_group, create_group, join_group, leave_group, get_group_members
 
+MAX_GROUP_MEMBERS = 5
+MIN_GROUP_MEMBERS_FOR_EXPLORATION = 2
+
 def create_group_command(player_id, group_name):
     """
     Creates a new group with the given name.
@@ -21,6 +24,12 @@ def join_group_command(player_id, group_name):
     :param group_name: Name of the group to join
     :return: Confirmation message
     """
+    group_members = get_group_members(group_name)
+
+    # Check if the group is full
+    if len(group_members) >= MAX_GROUP_MEMBERS:
+        return f"The group '{group_name}' is full. You cannot join."
+
     if join_group(player_id, group_name):
         return f"You have joined the group '{group_name}'!"
     return "Failed to join group. Make sure the group name is correct."
@@ -75,6 +84,14 @@ def handle_group_build_shelter(update, context):
     query.answer()
     
     player_id = context.user_data['player_id']
+    group_name = context.user_data.get('group_name')  # Assume you store the group name in user_data
+    group_members = get_group_members(group_name)
+
+    # Check if the group has enough members for exploration
+    if len(group_members) < MIN_GROUP_MEMBERS_FOR_EXPLORATION:
+        query.edit_message_text(text="You need at least 2 members to explore.")
+        return
+    
     result = build_group_shelter(player_id)
     query.edit_message_text(text=result)
 
