@@ -1,170 +1,96 @@
-from database import get_player_group, add_player_to_group, remove_player_from_group, notify_player
-from utils import get_player_id
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from database import get_group, create_group, join_group, leave_group, get_group_members
 
-MIN_GROUP_SIZE = 2  # Minimum number of members required to explore
-MAX_GROUP_SIZE = 5  # Maximum number of members allowed in a group
-
-class GroupManager:
-    def __init__(self):
-        self.groups = {}  # To hold groups in memory (for quick access)
-
-    def create_group(self, player_id, group_name):
-        """
-        Create a new group if it doesn't exist.
-        
-        :param player_id: ID of the player creating the group
-        :param group_name: Name of the group to create
-        :return: Message indicating success or failure
-        """
-        if group_name in self.groups:
-            return "Group already exists."
-        
-        self.groups[group_name] = {
-            'members': [player_id]
-        }
-        notify_player(player_id, f"You have created the group '{group_name}'!")
-        return f"Group '{group_name}' created successfully."
-
-    def join_group(self, player_id, group_name):
-        """
-        Allow a player to join an existing group.
-        
-        :param player_id: ID of the player joining the group
-        :param group_name: Name of the group to join
-        :return: Message indicating success or failure
-        """
-        if group_name not in self.groups:
-            return "Group does not exist."
-        
-        if len(self.groups[group_name]['members']) >= MAX_GROUP_SIZE:
-            return "Group is full. You cannot join."
-
-        self.groups[group_name]['members'].append(player_id)
-        notify_player(player_id, f"You have joined the group '{group_name}'!")
-        return f"You joined the group '{group_name}' successfully."
-
-    def leave_group(self, player_id, group_name):
-        """
-        Allow a player to leave a group.
-        
-        :param player_id: ID of the player leaving the group
-        :param group_name: Name of the group to leave
-        :return: Message indicating success or failure
-        """
-        if group_name not in self.groups or player_id not in self.groups[group_name]['members']:
-            return "You are not a member of this group."
-
-        self.groups[group_name]['members'].remove(player_id)
-        notify_player(player_id, f"You have left the group '{group_name}'.")
-        
-        if len(self.groups[group_name]['members']) == 0:
-            del self.groups[group_name]  # Delete the group if empty
-
-        return f"You left the group '{group_name}' successfully."
-
-    def invite_player(self, player_id, target_player_id, group_name):
-        """
-        Invite another player to the group.
-        
-        :param player_id: ID of the player sending the invite
-        :param target_player_id: ID of the player to invite
-        :param group_name: Name of the group to invite to
-        :return: Message indicating success or failure
-        """
-        if group_name not in self.groups:
-            return "Group does not exist."
-        
-        if target_player_id in self.groups[group_name]['members']:
-            return f"{target_player_id} is already in the group."
-
-        # Notify the invited player (you may implement a method to send an invitation)
-        notify_player(target_player_id, f"You have been invited to join the group '{group_name}' by {player_id}.")
-        return f"Invitation sent to {target_player_id}."
-
-    def kick_player(self, player_id, target_player_id, group_name):
-        """
-        Kick a player from the group.
-        
-        :param player_id: ID of the player kicking someone
-        :param target_player_id: ID of the player to kick
-        :param group_name: Name of the group to kick from
-        :return: Message indicating success or failure
-        """
-        if group_name not in self.groups or player_id not in self.groups[group_name]['members']:
-            return "You are not in this group."
-
-        if target_player_id not in self.groups[group_name]['members']:
-            return f"{target_player_id} is not in this group."
-
-        self.groups[group_name]['members'].remove(target_player_id)
-        notify_player(target_player_id, f"You have been kicked from the group '{group_name}'.")
-        return f"{target_player_id} has been kicked from the group '{group_name}'."
-
-    def can_explore(self, group_name):
-        """
-        Check if the group can start exploring based on its size.
-        
-        :param group_name: The name of the group to check
-        :return: Boolean indicating whether the group can explore
-        """
-        if group_name not in self.groups:
-            return False  # Group does not exist
-        member_count = len(self.groups[group_name]['members'])
-        return MIN_GROUP_SIZE <= member_count <= MAX_GROUP_SIZE
-
-    def start_exploration(self, player_id):
-        """
-        Start exploration if the group meets the size requirements.
-        
-        :param player_id: ID of the player initiating exploration
-        :return: Message indicating whether exploration can start
-        """
-        group_name = get_player_group(player_id)
-        if not group_name:
-            return "You are not in any group."
-        
-        if not self.can_explore(group_name):
-            return f"Your group must have between {MIN_GROUP_SIZE} and {MAX_GROUP_SIZE} members to start exploring."
-
-        # Proceed with exploration logic
-        return self.explore_group(group_name)
-
-    def explore_group(self, group_name):
-        """
-        Placeholder for actual exploration logic.
-        
-        :param group_name: The name of the group exploring
-        :return: Exploration result message
-        """
-        return f"The group '{group_name}' starts exploring the island!"
-
-# Example command integration for bot
 def create_group_command(player_id, group_name):
-    manager = GroupManager()
-    result = manager.create_group(player_id, group_name)
-    notify_player(player_id, result)
+    """
+    Creates a new group with the given name.
+
+    :param player_id: ID of the player creating the group
+    :param group_name: Name of the group to create
+    :return: Confirmation message
+    """
+    if create_group(player_id, group_name):
+        return f"Group '{group_name}' has been created successfully!"
+    return "Failed to create group. It may already exist."
 
 def join_group_command(player_id, group_name):
-    manager = GroupManager()
-    result = manager.join_group(player_id, group_name)
-    notify_player(player_id, result)
+    """
+    Allows a player to join an existing group.
+
+    :param player_id: ID of the player joining the group
+    :param group_name: Name of the group to join
+    :return: Confirmation message
+    """
+    if join_group(player_id, group_name):
+        return f"You have joined the group '{group_name}'!"
+    return "Failed to join group. Make sure the group name is correct."
 
 def leave_group_command(player_id, group_name):
-    manager = GroupManager()
-    result = manager.leave_group(player_id, group_name)
-    notify_player(player_id, result)
+    """
+    Allows a player to leave a group.
 
-def invite_player_command(player_id, target_player_id, group_name):
-    manager = GroupManager()
-    result = manager.invite_player(player_id, target_player_id, group_name)
-    notify_player(player_id, result)
+    :param player_id: ID of the player leaving the group
+    :param group_name: Name of the group to leave
+    :return: Confirmation message
+    """
+    if leave_group(player_id, group_name):
+        return f"You have left the group '{group_name}'."
+    return "Failed to leave group. You might not be a member."
 
-def kick_player_command(player_id, target_player_id, group_name):
-    manager = GroupManager()
-    result = manager.kick_player(player_id, target_player_id, group_name)
-    notify_player(player_id, result)
+def view_group_members_command(player_id, group_name):
+    """
+    Displays the members of a specific group.
 
-def start_exploration_command(player_id):
-    manager = GroupManager()
-    result = manager.start_exploration(player_id)
-    notify_player(player_id, result)
+    :param player_id: ID of the player requesting group members
+    :param group_name: Name of the group to view members
+    :return: List of group members
+    """
+    members = get_group_members(group_name)
+    if members:
+        member_list = "\n".join(members)
+        return f"Members of '{group_name}':\n{member_list}"
+    return "No members in this group or group does not exist."
+
+def group_build_shelter_button(update, context):
+    """
+    Displays a button to initiate group shelter building.
+    
+    :param update: Update object from Telegram
+    :param context: CallbackContext
+    """
+    keyboard = [
+        [InlineKeyboardButton("Build Shelter", callback_data='build_group_shelter')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text("What would you like to do?", reply_markup=reply_markup)
+
+def handle_group_build_shelter(update, context):
+    """
+    Handles the action of building a shelter for the group.
+    
+    :param update: Update object from Telegram
+    :param context: CallbackContext
+    """
+    query = update.callback_query
+    query.answer()
+    
+    player_id = context.user_data['player_id']
+    result = build_group_shelter(player_id)
+    query.edit_message_text(text=result)
+
+def build_group_shelter(player_id):
+    """
+    Logic for building a shelter collaboratively.
+    
+    :param player_id: ID of the player initiating the build
+    :return: Message indicating success or failure
+    """
+    # Example placeholder logic for building a shelter
+    if has_enough_resources(player_id):
+        # Deduct resources and notify players
+        return "You and your group successfully built a shelter!"
+    return "You do not have enough resources to build a shelter."
+
+def has_enough_resources(player_id):
+    # Check resources logic
+    return True  # Placeholder for actual resource check
