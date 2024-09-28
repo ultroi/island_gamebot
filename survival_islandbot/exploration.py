@@ -43,6 +43,7 @@ def handle_resource_event(player_id, event):
         if resource in event:
             amount = random.randint(*range_values)
             update_resources(player_id, {resource: amount})
-            return f"You gathered {amount} {resource}."
+            notify_player(player_id, f"You gathered {amount} {resource}.")
+            return
 
-    return "You explored but didn't find anything useful."
+    notify_player(player_id, "You explored but didn't find anything useful.")
