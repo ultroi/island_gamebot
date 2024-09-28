@@ -19,17 +19,22 @@ def craft_item(player_id, item_name):
     player_resources = get_resources(player_id)
     
     # Check if the player has enough resources
-    if all(player_resources.get(res_type, 0) >= amount for res_type, amount in recipe.items()):
-        # Deduct resources required for crafting
-        for res_type, amount in recipe.items():
-            update_resources(player_id, {res_type: -amount})
-        
-        # Notify player and return success message
-        notify_player(player_id, f"Successfully crafted {item_name}!")
-        return f"You crafted a {item_name}."
+    missing_resources = []
+    for res_type, amount in recipe.items():
+        if player_resources.get(res_type, 0) < amount:
+            missing_resources.append(f"{res_type} (needed: {amount}, available: {player_resources.get(res_type, 0)})")
     
-    return "You don't have enough resources to craft this item."
+    if missing_resources:
+        missing_resources_str = "\n".join(missing_resources)
+        return f"You don't have enough resources to craft {item_name}:\n{missing_resources_str}"
 
+    # Deduct resources required for crafting
+    for res_type, amount in recipe.items():
+        update_resources(player_id, {res_type: -amount})
+    
+    # Notify player and return success message
+    notify_player(player_id, f"Successfully crafted {item_name}!")
+    return f"You crafted a {item_name}."
 
 def list_craftable_items(player_id):
     """
@@ -54,7 +59,6 @@ def list_craftable_items(player_id):
         return
     else:
         notify_player(player_id, "You don't have enough resources to craft any items.")
-
 
 def show_player_resources(player_id):
     """
