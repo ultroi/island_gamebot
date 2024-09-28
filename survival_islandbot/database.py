@@ -1,58 +1,67 @@
 import psycopg2
+import psycopg2.pool
+
+# Connection pooling configuration
+pool = psycopg2.pool.SimpleConnectionPool(
+    minconn=5,
+    maxconn=10,
+    host="localhost",
+    dbname="survival_game",
+    user="your_user",
+    password="your_password"
+)
 
 def connect_db():
-    conn = psycopg2.connect(
-        dbname="survival_game",
-        user="your_user",
-        password="your_password",
-        host="localhost"
-    )
-    return conn
+    return pool.getconn()
 
-# Add a new player
+# Error handling and resource management
 def add_player(user_id):
-    query = "INSERT INTO players (user_id) VALUES (%s) RETURNING id;"
-    conn = connect_db()
-    with conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, (user_id,))
-            player_id = cursor.fetchone()[0]
-    conn.close()
-    return player_id
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("INSERT INTO players (user_id) VALUES (%s) RETURNING id", (user_id,))
+                player_id = cursor.fetchone()[0]
+                return player_id
+    except psycopg2.Error as e:
+        print(f"Error adding player: {e}")
+        raise
 
-# Get player resources
 def get_resources(player_id):
-    query = "SELECT wood, food, water FROM resources WHERE player_id = %s;"
-    conn = connect_db()
-    with conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, (player_id,))
-            resources = cursor.fetchone()
-    conn.close()
-    return resources if resources else (0, 0, 0)  # Return zero resources if not found
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT wood, food, water FROM resources WHERE player_id = %s", (player_id,))
+                resources = cursor.fetchone()
+                return resources if resources else (0, 0, 0)  # Return zero resources if not found
+    except psycopg2.Error as e:
+        print(f"Error getting resources: {e}")
+        raise
 
-# Update resources
 def update_resources(player_id, wood, food, water):
-    query = """
-    INSERT INTO resources (player_id, wood, food, water) 
-    VALUES (%s, %s, %s, %s) 
-    ON CONFLICT (player_id) 
-    DO UPDATE SET wood = resources.wood + EXCLUDED.wood,
-                  food = resources.food + EXCLUDED.food,
-                  water = resources.water + EXCLUDED.water;
-    """
-    conn = connect_db()
-    with conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, (player_id, wood, food, water))
-    conn.close()
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT EXISTS(SELECT 1 FROM resources WHERE player_id = %s)", (player_id,))
+                exists = cursor.fetchone()[0]
+                if exists:
+                    cursor.execute("""
+                        UPDATE resources SET wood = wood + %s, food = food + %s, water = water + %s WHERE player_id = %s
+                    """, (wood, food, water, player_id))
+                else:
+                    cursor.execute("""
+                        INSERT INTO resources (player_id, wood, food, water) VALUES (%s, %s, %s, %s)
+                    """, (player_id, wood, food, water))
+    except psycopg2.Error as e:
+        print(f"Error updating resources: {e}")
+        raise
 
-# Add an event for a player
 def add_event(player_id, event_type, description):
-    query = "INSERT INTO events (player_id, event_type, description) VALUES (%s, %s, %s);"
-    conn = connect_db()
-    with conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, (player_id, event_type, description))
-    conn.close()
-
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("INSERT INTO events (player_id, event_type, description) VALUES (%s, %s, %s)",
+                               (player_id, event_type, description))
+    except psycopg2.Error as e:
+        print(f"Error adding event: {e}")
+        raise
+        
