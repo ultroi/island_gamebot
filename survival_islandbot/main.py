@@ -1,8 +1,9 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 from game_logic import gather_resources, craft_weapon, build_shelter
 from events import dangerous_animal_event, explore_forest
 from multiplayer import group_build_shelter_button, handle_group_build_shelter
+from utils import notify_player, send_message_with_buttons
 
 # Start command to greet the user
 def start(update: Update, context: CallbackContext):
@@ -38,7 +39,6 @@ def main():
     # CallbackQueryHandler to handle inline buttons in group building and random events
     dispatcher.add_handler(CallbackQueryHandler(handle_group_build_shelter, pattern='^build_group_'))
     dispatcher.add_handler(CallbackQueryHandler(dangerous_animal_event, pattern='^(fight|flee)$'))
-    updater.dispatcher.add_handler(CallbackQueryHandler(button_callback))  # Add button callback handler
 
     # Start polling for updates
     updater.start_polling()
@@ -48,4 +48,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
