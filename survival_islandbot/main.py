@@ -38,6 +38,7 @@ def main():
     # CallbackQueryHandler to handle inline buttons in group building and random events
     dispatcher.add_handler(CallbackQueryHandler(handle_group_build_shelter, pattern='^build_group_'))
     dispatcher.add_handler(CallbackQueryHandler(dangerous_animal_event, pattern='^(fight|flee)$'))
+    updater.dispatcher.add_handler(CallbackQueryHandler(button_callback))  # Add button callback handler
 
     # Start polling for updates
     updater.start_polling()
