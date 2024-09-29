@@ -87,6 +87,61 @@ def explore(client, message):
     else:
         message.reply_text("You need to start the game with /start first.")
 
+# Function to generate a visual health bar
+def get_health_bar(health):
+    total_segments = 10  # 10 segments for health (each representing 10 points of health)
+    filled_segments = health // 10  # Filled segments based on health
+    empty_segments = total_segments - filled_segments
+
+    health_bar = "❤️" * filled_segments + "🖤" * empty_segments  # Hearts for filled and empty segments
+    return health_bar
+
+# Function to show the player's reputation in stars or medals
+def get_reputation_visual(reputation):
+    total_segments = 5  # 5 stars or medals to represent reputation
+    filled_segments = reputation // 20  # Filled based on reputation (100 max)
+    empty_segments = total_segments - filled_segments
+
+    reputation_bar = "⭐" * filled_segments + "⚫" * empty_segments  # Stars for reputation level
+    return reputation_bar
+
+# Function to display player's current location with icons
+def get_location_icon(location):
+    location_icons = {
+        "Beach": "🏝️ Beach",
+        "Forest": "🌲 Forest",
+        "Village": "🏘️ Village",
+        "Mountains": "🏔️ Mountains",
+        "Temple": "🏛️ Temple",
+        "Cave": "🕳️ Cave"
+    }
+    return location_icons.get(location, "📍 Unknown Location")  # Default to 'Unknown Location'
+
+# Function to generate interactive inventory display
+def get_inventory_display(inventory):
+    if not inventory:
+        return "Empty"
+    
+    items = inventory.split(", ")
+    item_icons = {
+        "wood": "🌲",
+        "stone": "🪨",
+        "leaves": "🍂",
+        "herbs": "🌿",
+        "crafted_weapon": "🗡️"
+    }
+
+    # Count each item in inventory
+    item_counts = {item: items.count(item) for item in set(items)}
+    
+    # Display each item with its count and icon
+    inventory_display = []
+    for item, count in item_counts.items():
+        icon = item_icons.get(item, "📦")  # Default to a box if no icon found
+        inventory_display.append(f"{icon} {item.capitalize()} (x{count})")
+    
+    return "\n".join(inventory_display)
+
 # Command: /inv (inventory)
 @app.on_message(filters.command("inv"))
 def inventory(client, message):
@@ -97,12 +152,26 @@ def inventory(client, message):
         inventory = player[3] if player[3] else "Empty"
         health = player[1]
         reputation = player[2]
+        location = player[5]
+
+        # Get visual health bar
+        health_bar = get_health_bar(health)
+        
+        # Get reputation stars or medals
+        reputation_bar = get_reputation_visual(reputation)
+
+        # Get location icon
+        location_icon = get_location_icon(location)
+
+        # Get inventory display
+        inventory_display = get_inventory_display(inventory)
         
         inv_text = (
             f"🧍 **Player Profile** 🧍\n\n"
-            f"**Health**: {health}\n"
-            f"**Reputation**: {reputation}\n"
-            f"**Inventory**: {inventory}\n"
+            f"**Location**: {location_icon}\n"
+            f"**Health**: {health} {health_bar}\n"
+            f"**Reputation**: {reputation} {reputation_bar}\n"
+            f"**Inventory**:\n{inventory_display}\n"
         )
         message.reply_text(inv_text)
     else:
@@ -136,6 +205,37 @@ def craft(client, message):
         else:
             message.reply_text("You don't have enough resources to craft anything.")
 
+
+# Function to check available resources for building quality tiers and compare with required materials
+def get_building_quality(inventory):
+    items = inventory.split(", ") if inventory else []
+    
+    # Count items in inventory
+    item_counts = {item: items.count(item) for item in set(items)}
+    wood = item_counts.get("wood", 0)
+    leaves = item_counts.get("leaves", 0)
+    stones = item_counts.get("stone", 0)
+
+    # Required materials for each quality
+    requirements = {
+        "Low Grade": {"wood": 3},
+        "+ Grade": {"wood": 3, "leaves": 2},
+        "++ Grade": {"wood": 3, "stones": 2},
+        "+++ Grade": {"wood": 3, "stones": 2, "leaves": 2}
+    }
+
+    # Check which grade can be built and how many materials are still needed
+    possible_grades = {}
+    
+    for grade, req in requirements.items():
+        missing = {item: req[item] - item_counts.get(item, 0) for item in req}
+        if all(v <= 0 for v in missing.values()):  # If no missing materials
+            possible_grades[grade] = {"status": "Can build", "missing": {}}
+        else:
+            possible_grades[grade] = {"status": "Missing materials", "missing": missing}
+
+    return possible_grades, item_counts  # Return possible shelter grades and current inventory count
+
 # Command: /build (build shelter)
 @app.on_message(filters.command("build"))
 def build(client, message):
@@ -143,12 +243,215 @@ def build(client, message):
     player = get_player(user_id)
 
     if player:
-        resources = player[4].split(", ") if player[4] else []
-        if "wood" in resources and "leaves" in resources:
-            update_player(user_id, "resources", "")
-            message.reply_text("You built a wood and leaves shelter!")
+        inventory = player[3]
+        # Determine the building quality based on available materials
+        possible_grades, item_counts = get_building_quality(inventory)
+
+        build_message = "🏠 **Build Shelter** 🏠\n\n"
+        build_options = []
+
+        # Show each possible shelter grade and required/missing materials
+        for grade, status_info in possible_grades.items():
+            status = status_info['status']
+            missing_text = ""
+            if status == "Missing materials":
+                missing_text = " (Need more: " + ", ".join(
+                    f"{item} ({abs(count)} more)" for item, count in status_info['missing'].items()
+                ) + ")"
+            
+            build_message += f"{grade}: {status}{missing_text}\n"
+            
+            # If buildable, add to interactive options
+            if status == "Can build":
+                build_options.append([InlineKeyboardButton(f"Build {grade}", callback_data=f"build_{grade.replace(' ', '_').lower()}")])
+
+        # Check if there are any build options available
+        if build_options:
+            message.reply_text(
+                build_message + "\nChoose the shelter quality to build:",
+                reply_markup=InlineKeyboardMarkup(build_options)
+            )
         else:
-            message.reply_text("You don't have enough resources to build anything.")
+            message.reply_text(build_message + "\nYou don't have enough materials to build any shelter.")
+    else:
+        message.reply_text("You need to start the game with /start first.")
+
+# Callback to handle building shelters
+@app.on_callback_query(filters.regex(r"build_(.+)"))
+def handle_build_shelter(client, callback_query):
+    quality = callback_query.data.split("_")[1].replace("_", " ")
+    user_id = callback_query.from_user.id
+    player = get_player(user_id)
+
+    # Deduct materials based on the building quality
+    if quality == "low_grade":
+        update_inventory(user_id, "wood", remove=True, count=3)
+    elif quality == "grade_wood_leaves":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "leaves", remove=True, count=2)
+    elif quality == "grade_wood_stones":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "stone", remove=True, count=2)
+    elif quality == "grade_wood_stones_leaves":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "stone", remove=True, count=2)
+        update_inventory(user_id, "leaves", remove=True, count=2)
+
+    callback_query.message.edit_text(f"You have successfully built a **{quality.replace('_', ' ')}** shelter!")
+
+# Helper function to update inventory (with the ability to remove multiple items)
+def update_inventory(user_id, item, remove=False, count=1):
+    player = get_player(user_id)
+    items = player[3].split(", ") if player[3] else []
+
+    if remove:
+        for _ in range(count):
+            if item in items:
+                items.remove(item)
+    else:
+        items.extend([item] * count)
+
+    # Update the player's inventory in the database
+    new_inventory = ", ".join(items)
+    update_player(user_id, "inventory", new_inventory)
+
+
+# Function to check if the player has built a shelter in the current location
+def has_shelter_in_location(player):
+    current_location = player[5]  # Player's current location
+    shelter_status = player[6]    # Player's shelter status (story_progress could be used for this)
+    
+    return f"shelter_{current_location}" in shelter_status
+
+# Command: /use_shelter (use the shelter if available in the current location)
+@app.on_message(filters.command("use_shelter"))
+def use_shelter(client, message):
+    user_id = message.from_user.id
+    player = get_player(user_id)
+
+    if player:
+        current_location = player[5]  # This tracks the current location
+        shelter_status = player[6]    # This tracks whether a shelter was built in the current location
+
+        if has_shelter_in_location(player):
+            shelter_type = shelter_status.split("_")[1]  # Extract shelter quality based on the current location
+            benefits = shelter_benefits(shelter_type)
+
+            if benefits:
+                # Regenerate health based on shelter quality
+                health_regen = benefits["health_regen"]
+                current_health = player[1]
+                new_health = min(current_health + health_regen, 100)  # Cap health at 100
+
+                update_player(user_id, "health", new_health)
+
+                message.reply_text(
+                    f"🏠 **Using Shelter in {current_location}** 🏠\n\n"
+                    f"You rested in your **{shelter_type.replace('_', ' ')}** shelter.\n"
+                    f"🌿 **Health Regeneration**: +{health_regen}\n"
+                    f"🛡️ **Protection**: {benefits['protection']}\n"
+                    f"Your current health is now: {new_health}/100."
+                )
+            else:
+                message.reply_text("You don't have a shelter to use.")
+        else:
+            message.reply_text(f"You haven't built a shelter in the **{current_location}**. Use /build to construct one.")
+    else:
+        message.reply_text("You need to start the game with /start first.")
+
+# Command: /build (build shelter in the current location)
+@app.on_message(filters.command("build"))
+def build(client, message):
+    user_id = message.from_user.id
+    player = get_player(user_id)
+
+    if player:
+        inventory = player[3]
+        current_location = player[5]
+        # Determine the building quality based on available materials
+        possible_grades, item_counts = get_building_quality(inventory)
+
+        build_message = f"🏠 **Build Shelter in {current_location}** 🏠\n\n"
+        build_options = []
+
+        # Show possible shelter grades and required/missing materials
+        for grade, status_info in possible_grades.items():
+            status = status_info['status']
+            missing_text = ""
+            if status == "Missing materials":
+                missing_text = " (Need more: " + ", ".join(
+                    f"{item} ({abs(count)} more)" for item, count in status_info['missing'].items()
+                ) + ")"
+            
+            build_message += f"{grade}: {status}{missing_text}\n"
+
+            # If buildable, add to interactive options
+            if status == "Can build":
+                build_options.append([InlineKeyboardButton(f"Build {grade}", callback_data=f"build_{grade.replace(' ', '_').lower()}")])
+
+        if build_options:
+            message.reply_text(
+                build_message + "\nChoose the shelter quality to build:",
+                reply_markup=InlineKeyboardMarkup(build_options)
+            )
+        else:
+            message.reply_text(build_message + "\nYou don't have enough materials to build any shelter.")
+    else:
+        message.reply_text("You need to start the game with /start first.")
+
+# Update shelter build to track the current location where it was built
+@app.on_callback_query(filters.regex(r"build_(.+)"))
+def handle_build_shelter(client, callback_query):
+    quality = callback_query.data.split("_")[1].replace("_", " ")
+    user_id = callback_query.from_user.id
+    player = get_player(user_id)
+    current_location = player[5]
+
+    # Store the built shelter in the current location
+    update_player(user_id, "story_progress", f"shelter_{current_location}_{quality.replace(' ', '_').lower()}")
+
+    # Deduct materials based on the shelter quality
+    if quality == "low_grade":
+        update_inventory(user_id, "wood", remove=True, count=3)
+    elif quality == "grade_wood_leaves":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "leaves", remove=True, count=2)
+    elif quality == "grade_wood_stones":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "stone", remove=True, count=2)
+    elif quality == "grade_wood_stones_leaves":
+        update_inventory(user_id, "wood", remove=True, count=3)
+        update_inventory(user_id, "stone", remove=True, count=2)
+        update_inventory(user_id, "leaves", remove=True, count=2)
+
+    callback_query.message.edit_text(f"You have successfully built a **{quality.replace('_', ' ')}** shelter in **{current_location}**!")
+
+# Command: /move (move to a new location)
+@app.on_message(filters.command("move"))
+def move(client, message):
+    user_id = message.from_user.id
+    player = get_player(user_id)
+
+    # Available locations to move to (could be dynamic based on player progress)
+    locations = ["Beach", "Forest", "Mountains", "Village"]
+
+    move_message = "🌍 **Choose your next location** 🌍\n\nWhere would you like to go?"
+    location_buttons = [
+        [InlineKeyboardButton(location, callback_data=f"move_{location.lower()}")] for location in locations
+    ]
+    
+    message.reply_text(move_message, reply_markup=InlineKeyboardMarkup(location_buttons))
+
+@app.on_callback_query(filters.regex(r"move_(.+)"))
+def handle_move_location(client, callback_query):
+    new_location = callback_query.data.split("_")[1].capitalize()
+    user_id = callback_query.from_user.id
+
+    # Update the player's location to the new location
+    update_player(user_id, "location", new_location)
+
+    callback_query.message.edit_text(f"You have moved to the **{new_location}**.\nYou need to build a new shelter here if you want to rest.")
+
 
 # Initialize the database and start the bot
 setup_db()
