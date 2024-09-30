@@ -452,6 +452,101 @@ def handle_move_location(client, callback_query):
 
     callback_query.message.edit_text(f"You have moved to the **{new_location}**.\nYou need to build a new shelter here if you want to rest.")
 
+# Shelter levels and required resources
+SHELTER_LEVELS = {
+    1: {"wood": 15, "leaves": 0, "stones": 0},  # Only wood
+    2: {"wood": 15, "leaves": 10, "stones": 0},  # Wood + Leaves
+    3: {"wood": 20, "leaves": 0, "stones": 15},  # Wood + Stones
+    4: {"wood": 15, "leaves": 10, "stones": 20}  # Wood + Stones + Leaves
+}
+
+# Helper function to check if player has enough resources for a shelter level
+def can_craft_shelter(user_id, shelter_level):
+    player = get_player(user_id)
+    inventory = player[3].split(", ") if player[3] else []
+
+    # Count the player's resources
+    wood = inventory.count("wood")
+    leaves = inventory.count("leaves")
+    stones = inventory.count("stones")
+
+    # Get required materials for the shelter level
+    required = SHELTER_LEVELS[shelter_level]
+    
+    # Check if the player has enough materials
+    if wood >= required["wood"] and leaves >= required["leaves"] and stones >= required["stones"]:
+        return True
+    else:
+        return False
+
+# Function to deduct the materials from the player's inventory after crafting
+def deduct_resources(user_id, shelter_level):
+    player = get_player(user_id)
+    inventory = player[3].split(", ") if player[3] else []
+
+    # Deduct the required resources
+    required = SHELTER_LEVELS[shelter_level]
+    
+    for _ in range(required["wood"]):
+        inventory.remove("wood")
+    for _ in range(required["leaves"]):
+        inventory.remove("leaves")
+    for _ in range(required["stones"]):
+        inventory.remove("stones")
+    
+    # Update the player's inventory
+    update_inventory(user_id, ", ".join(inventory))
+
+# Command: /build (build or upgrade shelter)
+@app.on_message(filters.command("build"))
+def build_shelter(client, message):
+    user_id = message.from_user.id
+    player = get_player(user_id)
+
+    if player:
+        inventory = player[3]
+        current_location = player[5]
+
+        # Shelter options for the player to choose
+        buttons = [
+            [InlineKeyboardButton("Level 1 Shelter (Wood)", callback_data="build_shelter_1")],
+            [InlineKeyboardButton("Level 2 Shelter (Wood + Leaves)", callback_data="build_shelter_2")],
+            [InlineKeyboardButton("Level 3 Shelter (Wood + Stones)", callback_data="build_shelter_3")],
+            [InlineKeyboardButton("Level 4 Shelter (Wood + Stones + Leaves)", callback_data="build_shelter_4")]
+        ]
+        
+        message.reply_text(
+            "🏠 **Build Shelter** 🏠\n\n"
+            "Choose the shelter level you want to build or upgrade to, based on your resources:",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+# Callback for shelter building
+@app.on_callback_query(filters.regex(r"build_shelter_(\d)"))
+def handle_build_shelter(client, callback_query):
+    shelter_level = int(callback_query.data.split("_")[2])
+    user_id = callback_query.from_user.id
+    
+    if can_craft_shelter(user_id, shelter_level):
+        # Deduct resources and confirm shelter build
+        deduct_resources(user_id, shelter_level)
+        
+        # Update the shelter status in the player's data
+        update_player(user_id, "story_progress", f"shelter_level_{shelter_level}")
+        
+        callback_query.message.edit_text(
+            f"🏠 You have successfully built a **Level {shelter_level} Shelter**!\n"
+            "You can now save the game and rest here."
+        )
+    else:
+        # If the player doesn't have enough resources
+        callback_query.message.edit_text(
+            f"❌ You don't have enough resources to build a **Level {shelter_level} Shelter**.\n"
+            "Check your inventory and try again."
+        )
+
+
+
 
 # Initialize the database and start the bot
 setup_db()
