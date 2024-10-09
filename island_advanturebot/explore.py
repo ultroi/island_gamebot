@@ -31,7 +31,7 @@ async def explore(update: Update, context: CallbackContext):
     context.chat_data  # Access chat data to ensure context is used
 
 
-async def move_on(update: Update, context: CallbackContext.DEFAULT_TYPE):
+async def move_on(update: Update, context: CallbackContext):
     user_id = update.callback_query.from_user.id
     player = await get_player(user_id)  # Ensure this is called asynchronously
 
