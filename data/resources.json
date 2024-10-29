@@ -1,0 +1,8 @@
+{
+    "Beach": ["driftwood", "seashells", "freshwater coconut", "fish"],
+    "Forest": ["berries", "herbs", "wild mushrooms", "wood"],
+    "Village": ["cloth", "pottery", "rope", "tools"],
+    "Mountains": ["stone", "ore", "wild herbs", "fresh spring water"],
+    "Temple": ["ancient relics", "mystical scrolls", "sacred herbs", "old coins"],
+    "Cave": ["bat guano", "crystals", "rare stones", "fungus"]
+}

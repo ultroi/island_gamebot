@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Find a berry bush",
+        "description": "You find a bush full of berries.",
+        "outcomes": {"gain_health": 10}
+    },
+    {
+        "name": "Encounter a wild animal",
+        "description": "A wild animal appears!",
+        "outcomes": {"lose_health": 20}
+    },
+    {
+        "name": "Discover a hidden cave",
+        "description": "You discover a hidden cave.",
+        "outcomes": {"gain_item": "torch"}
+    }
+]
