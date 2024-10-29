@@ -1,8 +1,9 @@
--- schema.sql
+-- db/schema.sql
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER UNIQUE,
     health INTEGER,
+    max_health INTEGER,
     inventory TEXT,
     location TEXT
 );
