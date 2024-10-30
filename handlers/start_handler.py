@@ -40,16 +40,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     elif query.data == 'solo_arc':
         # Start the explore command for Solo Arc
-        await query.edit_message_text(text="Starting your solo adventure...")
         await explore(update, context)
 
-        # Provide an explore button for future use
-        keyboard = [
-            [InlineKeyboardButton("Explore Again", callback_data='explore_again')]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.message.reply_text(text="You can explore again by clicking the button below or using the /explore command.", reply_markup=reply_markup)
-    
     elif query.data == 'explore_again':
         # Run the explore command again
         await explore(update, context)
