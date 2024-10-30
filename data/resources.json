@@ -1,8 +1,50 @@
 {
-    "Beach": ["driftwood", "seashells", "freshwater coconut", "fish"],
-    "Forest": ["berries", "herbs", "wild mushrooms", "wood"],
-    "Village": ["cloth", "pottery", "rope", "tools"],
-    "Mountains": ["stone", "ore", "wild herbs", "fresh spring water"],
-    "Temple": ["ancient relics", "mystical scrolls", "sacred herbs", "old coins"],
-    "Cave": ["bat guano", "crystals", "rare stones", "fungus"]
+    "Beach": [
+        "driftwood",
+        "seashells",
+        "freshwater coconut",
+        "fish",
+        "sand",
+        "clay",
+        "shark tooth"
+    ],
+    "Forest": [
+        "berries",
+        "herbs",
+        "wild mushrooms",
+        "wood",
+        "sticks",
+        "leaves",
+        "rare flowers"
+    ],
+    "Village": [
+        "cloth",
+        "pottery",
+        "rope",
+        "tools",
+        "spices",
+        "ancient artifacts"
+    ],
+    "Mountains": [
+        "stone",
+        "ore",
+        "wild herbs",
+        "fresh spring water",
+        "rare minerals",
+        "fossils"
+    ],
+    "Temple": [
+        "ancient relics",
+        "mystical scrolls",
+        "sacred herbs",
+        "old coins",
+        "enchanted stones"
+    ],
+    "Cave": [
+        "bat guano",
+        "crystals",
+        "rare stones",
+        "fungus",
+        "glowstone"
+    ]
 }

@@ -2,16 +2,123 @@
     {
         "name": "Find a berry bush",
         "description": "You find a bush full of berries.",
-        "outcomes": {"gain_health": 10}
+        "outcomes": {
+            "gain_health": 10,
+            "gain_item": ["berries"]
+        }
     },
     {
         "name": "Encounter a wild animal",
         "description": "A wild animal appears!",
-        "outcomes": {"lose_health": 20}
+        "outcomes": {
+            "lose_health": 20,
+            "gain_item": ["flee"]
+        }
     },
     {
         "name": "Discover a hidden cave",
-        "description": "You discover a hidden cave.",
-        "outcomes": {"gain_item": "torch"}
+        "description": "You discover a hidden cave filled with crystals.",
+        "outcomes": {
+            "gain_item": ["torch", "crystal"]
+        }
+    },
+    {
+        "name": "Meet a wandering merchant",
+        "description": "You meet a merchant selling rare items.",
+        "outcomes": {
+            "gain_item": ["mysterious potion"],
+            "lose_item": ["gold coins"]
+        }
+    },
+    {
+        "name": "Find a lost treasure",
+        "description": "You stumble upon an old treasure chest.",
+        "outcomes": {
+            "gain_item": ["gold coins", "ancient artifact"]
+        }
+    },
+    {
+        "name": "Get caught in a storm",
+        "description": "A sudden storm hits!",
+        "outcomes": {
+            "lose_health": 10,
+            "gain_item": ["wet clothes"]
+        }
+    },
+    {
+        "name": "Help a stranded traveler",
+        "description": "You find a traveler in need of assistance.",
+        "outcomes": {
+            "gain_health": 5,
+            "gain_item": ["thank you gift"]
+        }
+    },
+    {
+        "name": "Stumble upon a magical fountain",
+        "description": "You find a magical fountain that grants wishes.",
+        "outcomes": {
+            "gain_health": 20,
+            "gain_item": ["magic token"]
+        }
+    },
+    {
+        "name": "Discover an ancient ruin",
+        "description": "You explore the remnants of an ancient civilization.",
+        "outcomes": {
+            "gain_item": ["ancient relic", "scroll of knowledge"]
+        }
+    },
+    {
+        "name": "Find a fishing spot",
+        "description": "You discover a calm lake perfect for fishing.",
+        "outcomes": {
+            "gain_item": ["fish"],
+            "gain_health": 5
+        }
+    },
+    {
+        "name": "Trip and fall",
+        "description": "You trip over a rock and fall.",
+        "outcomes": {
+            "lose_health": 15,
+            "gain_item": ["injury bandage"]
+        }
+    },
+    {
+        "name": "Meet a friendly NPC",
+        "description": "A friendly villager offers you advice.",
+        "outcomes": {
+            "gain_health": 10,
+            "gain_item": ["useful tip"]
+        }
+    },
+    {
+        "name": "Find a lost artifact",
+        "description": "You unearth an ancient artifact buried beneath the sand.",
+        "outcomes": {
+            "gain_item": ["ancient coin", "mysterious stone"]
+        }
+    },
+    {
+        "name": "Camp under the stars",
+        "description": "You set up camp and gaze at the stars, feeling refreshed.",
+        "outcomes": {
+            "gain_health": 15
+        }
+    },
+    {
+        "name": "Fight off a bandit",
+        "description": "A bandit tries to steal from you, but you manage to defend yourself.",
+        "outcomes": {
+            "lose_health": 10,
+            "gain_item": ["bandit's dagger"]
+        }
+    },
+    {
+        "name": "Find a secret passage",
+        "description": "You find a hidden path that leads to a secluded clearing.",
+        "outcomes": {
+            "gain_item": ["map fragment"]
+        }
     }
 ]

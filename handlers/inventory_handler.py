@@ -1,9 +1,11 @@
 from telegram import Update
-from telegram.ext import ContextTypes
 from utils.db_utils import load_player
 from typing import Optional
+from utils.decorators import user_verification, maintenance_mode_only
 
-async def inventory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@user_verification
+@maintenance_mode_only
+async def inventory(update: Update) -> None:
     user_id = update.message.from_user.id
     player = load_player(user_id)
     
