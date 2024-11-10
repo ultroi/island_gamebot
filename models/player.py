@@ -1,4 +1,3 @@
-# models/player.py
 class Player:
     def __init__(self, user_id, name, health=100, max_health=100, inventory=None, location='beach', explorations=0):
         self.user_id = user_id

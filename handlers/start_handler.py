@@ -27,8 +27,6 @@ RESTART_MESSAGE = (
 @maintenance_mode_only
 @user_verification
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Access context to avoid compile error
-    bot = context.bot
     """
     Handle the /start command. Greets the user and presents options based on their player status.
 
@@ -38,8 +36,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     user_id = update.message.from_user.id
     user_name = update.message.from_user.first_name  # Get the user's Telegram first name
-    player = load_player(user_id)
+    
 
+    player = load_player(user_id)
     if player:
         # Player already exists, present options for continuing, restarting, or switching to narrative
         keyboard = [
@@ -52,7 +51,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         # New player, show the start message and Start Adventure button
         player = Player(user_id, name=user_name)
-        save_player(player)
+        await save_player(player)
+
         keyboard = [
             [InlineKeyboardButton("🌊 Start Adventure", callback_data='start_adventure')]
         ]
@@ -97,9 +97,9 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
         elif query.data == 'restart_survival_arc':
-            delete_player_progress(query.from_user.id, arc_type='survival', context=context)
+            await delete_player_progress(query.from_user.id, arc_type='survival', context=context)
             player = Player(query.from_user.id)  # Reinitialize player for new survival arc
-            save_player(player)
+            await save_player(player)
             await query.message.reply_text("🆕 Starting a new Survival Arc! Let’s see how you fare this time.")
             await send_game_brief(query)
 

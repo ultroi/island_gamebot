@@ -1,7 +1,9 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from utils.db_utils import load_player
 from typing import Optional
+from handlers.adventure_handler import get_player_status
 from utils.decorators import user_verification, maintenance_mode_only
+
 
 @user_verification
 @maintenance_mode_only
@@ -14,18 +16,13 @@ async def inventory(update: Update) -> None:
         return
 
     response_message = get_player_status(player)
-    await update.message.reply_text(response_message, parse_mode='Markdown')
+    
+    # Creating inline keyboard to provide more options
+    keyboard = [
+        [InlineKeyboardButton("🏞️ Explore", callback_data='explore_again')],
+        [InlineKeyboardButton("🔙 Go Back", callback_data='back_to_menu')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(response_message, parse_mode='Markdown', reply_markup=reply_markup)
 
-def get_player_status(player) -> str:
-    location = player.location or "Unknown location"
-    health = player.health or 100
-    max_health = player.max_health or 100
-    inventory_list = "\n".join(f"- {item}" for item in player.inventory) if player.inventory else "Your inventory is empty."
-    health_bar = "[" + "█" * (health * 10 // max_health) + " " * (10 - (health * 10 // max_health)) + "]"
-
-    return (
-        f"📍 *Location:* {location}\n"
-        f"❤️ *Health:* {health}/{max_health}\n"
-        f"🎒 *Inventory:*\n{inventory_list}\n\n"
-        f"🩺 *Health Status:* {health_bar}"
-    )
