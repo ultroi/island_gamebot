@@ -1,7 +1,8 @@
 # utils/db_utils.py
 from pymongo import MongoClient
-from config import MONGO_URI
+from BOT.config import MONGO_URI
 from models.player import Player
+from pyrogram import Client
 
 client = MongoClient(MONGO_URI)
 db = client['Tgbotproject']
@@ -23,7 +24,7 @@ async def save_player(player):
     except Exception as e:
         print(f"An error occurred while saving the player: {e}")
 
-def load_player(user_id):
+async def load_player(user_id):
     try:
         players_collection = db['players']
         player_data = players_collection.find_one({'user_id': user_id})
@@ -41,7 +42,7 @@ def load_player(user_id):
         print(f"An error occurred while loading the player: {e}")
         return None
 
-def get_all_players():
+async def get_all_players():
     try:
         players_collection = db['players']
         players = list(players_collection.find())
@@ -50,7 +51,7 @@ def get_all_players():
         print(f"An error occurred while retrieving players: {e}")
         return []
 
-def delete_player(user_id):
+async def delete_player(user_id):
     try:
         players_collection = db['players']
         result = players_collection.delete_one({'user_id': user_id})
@@ -59,7 +60,7 @@ def delete_player(user_id):
         print(f"An error occurred while deleting the player: {e}")
         return False
 
-def delete_player_progress(user_id, arc_type='survival', context=None):
+async def delete_player_progress(user_id, arc_type='survival', context=None):
     try:
         players_collection = db['players']
         if arc_type == 'survival':
