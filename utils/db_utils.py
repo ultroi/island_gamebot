@@ -1,47 +1,55 @@
 # utils/db_utils.py
+from typing import Optional
 from pymongo import MongoClient
 from config import MONGO_URI
 from models.player import Player
+from pyrogram import Client
 
-client = MongoClient(MONGO_URI)
-db = client['Tgbotproject']
+# Assuming you have a MongoDB client and database setup
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client.get_database()
+players_collection = db.get_collection("players")
 
-async def save_player(player):
+async def save_player(player: Player) -> None:
     try:
-        players = db.players
-        players.update_one(
+        players_collection.update_one(
             {'user_id': player.user_id},
             {'$set': {
                 'name': player.name,
                 'health': player.health,
                 'max_health': player.max_health,
                 'inventory': player.inventory,
-                'location': player.location
+                'location': player.location,
+                'explorations': player.explorations,
+                'experience': player.experience,
+                'stamina': player.stamina
             }},
             upsert=True
         )
     except Exception as e:
         print(f"An error occurred while saving the player: {e}")
 
-def load_player(user_id):
+async def load_player(user_id: int) -> Optional[Player]:
     try:
-        players_collection = db['players']
         player_data = players_collection.find_one({'user_id': user_id})
         if player_data:
             return Player(
                 user_id=player_data['user_id'],
                 name=player_data['name'],
-                health=player_data['health'],
-                max_health=player_data['max_health'],
-                inventory=player_data['inventory'],
-                location=player_data['location']
+                health=player_data.get('health', 100),
+                max_health=player_data.get('max_health', 100),
+                inventory=player_data.get('inventory', []),
+                location=player_data.get('location', 'beach'),
+                explorations=player_data.get('explorations', 0),
+                experience=player_data.get('experience', 0),
+                stamina=player_data.get('stamina', 50)
             )
         return None
     except Exception as e:
         print(f"An error occurred while loading the player: {e}")
         return None
 
-def get_all_players():
+async def get_all_players():
     try:
         players_collection = db['players']
         players = list(players_collection.find())
@@ -50,7 +58,7 @@ def get_all_players():
         print(f"An error occurred while retrieving players: {e}")
         return []
 
-def delete_player(user_id):
+async def delete_player(user_id):
     try:
         players_collection = db['players']
         result = players_collection.delete_one({'user_id': user_id})
@@ -59,7 +67,7 @@ def delete_player(user_id):
         print(f"An error occurred while deleting the player: {e}")
         return False
 
-def delete_player_progress(user_id, arc_type='survival', context=None):
+async def delete_player_progress(user_id, arc_type='survival', context=None):
     try:
         players_collection = db['players']
         if arc_type == 'survival':

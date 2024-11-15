@@ -1,8 +1,33 @@
 {
-    "Beach": "🏝️ Beach",
-    "Forest": "🌲 Forest",
-    "Village": "🏘️ Village",
-    "Mountains": "🏔️ Mountains",
-    "Temple": "🏛️ Temple",
-    "Cave": "🕳️ Cave"
-}
+    "Beach": {
+      "description": "A sandy shore with gentle waves, scattered driftwood, and occasional crabs. Perfect for beginner survivors.",
+      "level_range": [1, 10],
+      "challenges": ["Heat Exhaustion", "High Tides", "Crab Swarms", "Strong Winds"],
+      "available_resources": ["Wood", "Seaweed", "Shells", "Fish", "Driftwood", "Saltwater"]
+    },
+    "Mountain": {
+      "description": "Steep cliffs with chilling winds, offering rich ores but home to dangerous wildlife.",
+      "level_range": [11, 20],
+      "challenges": ["Steep Slopes", "Avalanches", "Wild Animals", "Thin Air"],
+      "available_resources": ["Iron Ore", "Coal", "Herbs", "Rock Crystals", "Pine Sap", "Snow"]
+    },
+    "Caves": {
+      "description": "Dark and damp caves filled with treasures, but fraught with hidden dangers like cave-ins and venomous creatures.",
+      "level_range": [21, 30],
+      "challenges": ["Bats", "Cave-Ins", "Darkness", "Poisonous Pools"],
+      "available_resources": ["Gold Ore", "Silver Ore", "Glowstone", "Fossils", "Crystal Shards", "Glowcap Mushrooms"]
+    },
+    "Dark Forest": {
+      "description": "An ominous forest cloaked in shadows, brimming with magical plants and ferocious creatures.",
+      "level_range": [31, 40],
+      "challenges": ["Eerie Silence", "Poisonous Plants", "Ambush Predators", "Shadow Beasts"],
+      "available_resources": ["Mystic Herbs", "Dark Wood", "Spider Silk", "Enchanted Vines", "Nightshade", "Spirit Stones"]
+    },
+    "Desert": {
+      "description": "A vast, arid landscape with scorching heat, offering rare treasures for the bold adventurer.",
+      "level_range": [41, 50],
+      "challenges": ["Extreme Heat", "Sandstorms", "Quicksand", "Poisonous Creatures"],
+      "available_resources": ["Sand", "Cactus Flesh", "Rare Minerals", "Ancient Relics", "Sunstone", "Golden Sand Grains"]
+    }
+  }
+  
