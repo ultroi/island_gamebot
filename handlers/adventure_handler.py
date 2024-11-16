@@ -1,212 +1,126 @@
 import random
-import json
 import logging
-from collections import Counter
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.enums import ParseMode
 from utils.db_utils import load_player, save_player
 from utils.decorators import user_verification, maintenance_mode_only
+from utils.shared_utils import get_inventory_capacity, get_health_bar
+import json
+from handlers.inventory_handler import show_inventory  # Import the show_inventory function
 
-# Load resources, areas, and events from JSON files
-def load_json_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        logging.error(f"Error loading {file_path}: {e}")
-        return {}
+with open('/workspaces/island_gamebot/data/resources.json') as f:
+    resources = json.load(f)
 
-resources = load_json_file('/workspaces/island_gamebot/data/resources.json')
-areas = load_json_file('/workspaces/island_gamebot/data/areas.json')
-events = load_json_file('/workspaces/island_gamebot/data/events.json')
+with open('/workspaces/island_gamebot/data/areas.json') as f:
+    areas = json.load(f)
 
-@user_verification
-@maintenance_mode_only
-async def explore(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    if not query:
-        await update.message.reply_text("This command can only be used via button interaction.")
-        return
-    user_id = query.from_user.id
+with open('/workspaces/island_gamebot/data/events.json') as f:
+    events = json.load(f)
 
-    # Load player data
-    player = load_player(user_id)
-    if not player:
-        message = "You need to start your adventure first using /start."
-        await (query.answer(message) if query else update.message.reply_text(message))
+# Exploration command handler
+async def explore(client: Client, message: Message):
+    if message.from_user.is_bot:
+        bot_username = (await client.get_me()).username
+        logging.info(f"Bot {bot_username} is triggering the explore function. Skipping.")
         return
 
-    # Exploration outcome setup
-    event_message, item_received = handle_exploration_event(player)
+    logging.info(f"Exploration command received from user {message.from_user.id} - {message.from_user.first_name}")
+    user_id = message.from_user.id
+    player = await load_player(user_id)
+    
+    if player is None:
+        await message.reply("Player data could not be loaded. Please try again later.")
+        return
+    
+    # If this is the player's first time exploring, mark it as an adventure started
+    if not player.started_adventure:
+        player.started_adventure = True
+        await save_player(player)  # Save this change
+        logging.info(f"Player {player.name} has started a new adventure.")
+        return
 
-    # Health bar display
-    health_bar = calculate_health_bar(player.health, player.max_health)
+    # Determine accessible area based on player's level
+    if player.level <= 10:
+        current_area = "Beach"
+    elif player.level <= 20:
+        current_area = "Mountain"
+    elif player.level <= 30:
+        current_area = "Caves"
+    elif player.level <= 40:
+        current_area = "Dark Forest"
+    else:
+        current_area = "Desert"
+
+    # Generate exploration event and messages
+    event_message, item_received = handle_exploration_event(player, current_area)
+    health_bar = get_health_bar(player.health, player.max_health)
     player_status = f"<b>{player.name}</b>\n{health_bar}\n<b>{player.health}/{player.max_health}</b>"
-
-    # Item received message
     item_message = generate_item_message(item_received)
 
     try:
         reply_markup = get_inline_keyboard()
-        response_message = f"{player_status}\n\n{event_message}{item_message}\n\nWhat would you like to do next?"
-
-        # Send response
-        if query:
-            await query.message.reply_text(response_message, reply_markup=reply_markup, parse_mode='HTML')
-        else:
-            await update.message.reply_text(response_message, reply_markup=reply_markup, parse_mode='HTML')
-
-        # Chance for location change
-        if random.random() < 0.01:
-            new_location = random.choice(list(areas.keys()))
-            if new_location != player.location:
-                player.location = new_location
-                await update.message.reply_text(f"🏞️ You've discovered a new area: <b>{new_location}</b>!", parse_mode='HTML')
-
-        # Save player changes
-        save_player(player)
+        response_message = f"{player_status}\n\n{event_message}{item_message}"
+        await message.reply(response_message, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
+        
+        await save_player(player)
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        message = "An error occurred. Please try again later."
-        await (query.answer(message) if query else update.message.reply_text(message))
+        await message.reply("An error occurred. Please try again later.")
 
-def handle_exploration_event(player):
-    event_message, item_received = "", None
+def handle_exploration_event(player, current_area):
+    # Generate random resources and encounters based on the current area
+    resources_collected = []
+    encounter_message = ""
 
-    # Main exploration events (19% chance)
-    if random.random() < 0.19:
-        if not events:
-            return "No events available.", None
-        event = random.choice(events)
-        event_message = f"🔍 **Exploration Event**\n*{event['description']}*"
-        outcomes = event["outcomes"]
+    if current_area in resources:
+        area_resources = resources[current_area]
+        food_items = area_resources.get("food_item", {})
+        non_food_items = area_resources.get("non_fooditem", {})
 
-        if "gain_health" in outcomes:
-            player.health = min(player.health + outcomes["gain_health"], player.max_health)
-            event_message += "\n✨ You feel rejuvenated and regain some health!"
-        if "lose_health" in outcomes:
-            player.health = max(player.health - outcomes["lose_health"], 0)
-            event_message += "\n⚠️ A challenging encounter left you a bit wounded."
+        # Collect up to 3 items, prioritizing rare items if available
+        collected_items = []
+        if "rare" in food_items:
+            collected_items.extend(random.choices(food_items["rare"], k=min(1, len(food_items["rare"])), weights=[0.2] * len(food_items["rare"])))
+        if "common" in food_items:
+            collected_items.extend(random.choices(food_items["common"], k=min(2, len(food_items["common"])), weights=[0.8] * len(food_items["common"])))
+        if "rare" in non_food_items:
+            collected_items.extend(random.choices(non_food_items["rare"], k=min(1, len(non_food_items["rare"])), weights=[0.2] * len(non_food_items["rare"])))
+        if "common" in non_food_items:
+            collected_items.extend(random.choices(non_food_items["common"], k=min(2, len(non_food_items["common"])), weights=[0.8] * len(non_food_items["common"])))
+        
+        resources_collected = collected_items[:3]  # Ensure only up to 3 items are collected
 
-        if "gain_item" in outcomes:
-            gained_items = outcomes["gain_item"]
-            if isinstance(gained_items, list):
-                for item in gained_items:
-                    player.inventory.append(item)
-                    event_message += f"\n🎁 You found a **{item}**!"
-            else:
-                player.inventory.append(gained_items)
-                event_message += f"\n🎁 You found a **{gained_items}**!"
-    else:
-        if random.random() < 0.8:
-            location_items = resources.get(player.location, [])
-            if location_items:
-                random_item = random.choice(location_items)
-                player.inventory.append(random_item)
-                item_received = random_item
-                event_message = f"🌟 You found something useful: **{random_item}**!"
-            else:
-                event_message = "You search around, but find nothing this time."
+    # Handle specific encounters based on area
+    if current_area in events:
+        encounter_message = random.choice(events[current_area])
+
+    # Add resources to player's inventory
+    for resource in resources_collected:
+        if len(player.inventory) < get_inventory_capacity(player.level):
+            player.inventory.append(resource)
         else:
-            no_item_messages = [
-                "You search around, but find nothing this time.",
-                "It seems the area has little to offer right now.",
-                "Your exploration yields no discoveries today.",
-                "Despite your efforts, you come up empty-handed.",
-                "Just empty pockets and empty hands this time."
-            ]
-            event_message = random.choice(no_item_messages)
-    
-    return event_message, item_received
+            encounter_message += "\nYour inventory is full. You couldn't collect all resources."
 
-def calculate_health_bar(health, max_health, bar_length=15):
-    filled_length = int(round(bar_length * health / float(max_health)))
-    bar = '█' * filled_length + '-' * (bar_length - filled_length)
-    return f"{bar}"
+    # Generate event message
+    event_message = f"You explored the {current_area} and found: {', '.join(resources_collected)}.\n{encounter_message}"
+    return event_message, resources_collected
 
-def generate_item_message(item_received):
-    if not item_received:
+def generate_item_message(items):
+    if not items:
         return ""
-    
-    item_messages = [
-        f"🌟 You found something useful: **{item_received}**!",
-        f"✨ Lucky find! You picked up **{item_received}**.",
-        f"🔍 Your keen eye spots **{item_received}** among the surroundings.",
-        f"💎 Discovery! You've added **{item_received}** to your inventory.",
-        f"📦 You stumble upon **{item_received}** and add it to your supplies."
-    ]
-    return f"\n\n{random.choice(item_messages)}"
+    return f"\n\nYou received: {', '.join(items)}."
 
 def get_inline_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("Check Inventory", callback_data='check_inventory')],
-        [InlineKeyboardButton("Explore Again", callback_data='explore_again')]
-    ]
-    return InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Show Inventory", callback_data="show_inventory")]
+    ])
 
-def get_player_status(player) -> str:
-    # Header and player info
-    name = player.name
-    health = player.health or 100
-    max_health = player.max_health or 100
-    
-    # Visual health bar based on player's health
-    health_bar_length = 15
-    filled_length = int(health_bar_length * health / max_health)
-    health_bar = "[" + "█" * filled_length + " " * (health_bar_length - filled_length) + "]"
+async def handle_show_inventory(client, query):
+    if query.data == 'show_inventory':
+        await show_inventory(client, query.message)
 
-    # Location and Inventory
-    location = player.location or "Mysterious Island"
-    item_counts = Counter(player.inventory)
-    inventory_list = "\n".join(
-        f"🔹 *{item}* x{count}" for item, count in item_counts.items()
-    ) if item_counts else "👜 Your inventory is empty."
-
-    # Final message
-    return (
-        f"🏝️ *Island Adventure Inventory*\n\n"
-        f"👤 *Name:* {name}\n"
-        f"❤️ *Health:* {health}/{max_health}\n"
-        f"{health_bar}\n\n"
-        f"📍 *Current Location:* {location}\n\n"
-        f"🎒 *Items:* \n{inventory_list}\n\n"
-        "Choose your next move below!"
-    )
-
-async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    callback_data = query.data
-
-    try:
-        await query.answer()  # Acknowledge the callback query
-
-        if callback_data == 'check_inventory':
-            await check_inventory(update, context)
-        elif callback_data == 'explore_again':
-            await explore(update, context)
-    except Exception as e:
-        logging.error(f"An error occurred in callback_handler: {e}")
-        await query.message.reply_text("An error occurred. Please try again later.")
-
-async def check_inventory(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    if not query:
-        await update.message.reply_text("This command can only be used via button interaction.")
-        return
-    user_id = query.from_user.id
-
-    # Load player data
-    player = load_player(user_id)
-    if not player:
-        await query.answer("You need to start your adventure first using /start.")
-        return
-
-    # Get player status
-    player_status = get_player_status(player)
-
-    # Send player status
-    try:
-        await query.message.edit_text(player_status, parse_mode='HTML')
-    except Exception as e:
-        logging.error(f"An error occurred while updating the message: {e}")
-        await query.answer("An error occurred. Please try again later.")
+# Register function for explore command in main.py
+def register(app: Client):
+    app.on_message(filters.command("explore") & user_verification & maintenance_mode_only)(explore)
+    app.on_callback_query(filters.regex("show_inventory"))(show_inventory)
