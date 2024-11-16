@@ -1,143 +1,107 @@
-# handlers/start_handler.py
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
+from pyrogram.enums import ParseMode
 from models.player import Player
 from utils.db_utils import load_player, save_player, delete_player_progress
 from handlers.adventure_handler import explore
-from utils.decorators import user_verification, maintenance_mode_only
- 
+from utils.decorators import maintenance_mode_only
 
+# Messages
 START_MESSAGE = (
     "🏝️ <b>Welcome to Island Survival Bot!</b> 🏝️\n\n"
-    "You've found yourself <b>stranded on a mysterious island</b> with only limited supplies. "
-    "Survival depends on your ability to <b>explore</b>, <b>gather resources</b>, and overcome the challenges "
-    "hidden in every corner of the island. 🌊🐚🌴\n\n"
-    "Are you ready to begin your adventure? 🧭"
+    "You're stranded on a mysterious island. Explore, gather resources, and survive!\n\n"
+    "Are you ready to start your adventure? 🌊🐚🌴"
 )
 
 RESTART_MESSAGE = (
-    "🔄 <b>Welcome back to the Island Survival Adventure!</b>\n\n"
-    "It seems you've already started your survival journey! Would you like to:\n\n"
-    "🌟 <b>Continue your current adventure</b> to pick up where you left off,\n"
-    "🆕 <b>Start a new arc</b> to reset and face new challenges, or\n"
-    "📖 <b>Switch to the Narrative Arc</b> for a story-based adventure.\n\n"
-    "Choose one of the options below to continue!"
+    "🔄 <b>Welcome back!</b>\n\n"
+    "You can:\n\n"
+    "🌟 <b>Continue your adventure</b>,\n"
+    "🆕 <b>Start a new adventure</b>, or\n"
+    "📖 <b>Switch to the Narrative Arc</b> (Coming Soon).\n\n"
+    "Choose below!"
 )
 
-@maintenance_mode_only
-@user_verification
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Handle the /start command. Greets the user and presents options based on their player status.
+async def start(_, message: Message):
+    user_id = message.from_user.id
+    user_name = message.from_user.first_name
 
-    Args:
-        update (Update): Incoming update from Telegram.
-        context (ContextTypes.DEFAULT_TYPE): Context object with bot data.
-    """
-    user_id = update.message.from_user.id
-    user_name = update.message.from_user.first_name  # Get the user's Telegram first name
-    
-
-    player = load_player(user_id)
+    # Load player data or create a new player
+    player = await load_player(user_id)
     if player:
-        # Player already exists, present options for continuing, restarting, or switching to narrative
+        # Existing player: prompt to start a new arc and additional options for Settings and Support
         keyboard = [
-            [InlineKeyboardButton("🔄 Continue Current Adventure", callback_data='continue_arc')],
-            [InlineKeyboardButton("🆕 Start New Arc", callback_data='confirm_new_arc')],
-            [InlineKeyboardButton("📖 Switch to Narrative Arc (Coming Soon)", callback_data='narrative_arc')]
+            [InlineKeyboardButton("🆕 Start a New Adventure", callback_data='confirm_new_arc')],
+            [InlineKeyboardButton("⚙️ Settings", callback_data='settings')],
+            [InlineKeyboardButton("💬 Support", url='https://t.me/SurvivalSupportbot')]  # Link to support bot
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(RESTART_MESSAGE, reply_markup=reply_markup, parse_mode='HTML')
+        await message.reply_text(RESTART_MESSAGE, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
     else:
-        # New player, show the start message and Start Adventure button
-        player = Player(user_id, name=user_name)
+        # New player: prompt to start adventure
+        player = Player(user_id=user_id, name=user_name)
         await save_player(player)
-
         keyboard = [
             [InlineKeyboardButton("🌊 Start Adventure", callback_data='start_adventure')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(START_MESSAGE, reply_markup=reply_markup, parse_mode='HTML')
+        await message.reply_text(START_MESSAGE, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
 
 
-@maintenance_mode_only
-@user_verification
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
+async def button(client: Client, query: CallbackQuery):
+    await query.answer()  # Acknowledge the callback query
+
     try:
         if query.data == 'start_adventure':
-            await send_game_brief(query)
-
-        elif query.data == 'continue_arc':
-            await query.message.edit_text("🔄 Resuming your current adventure! Let’s pick up where we left off.")
-            await explore(update, context=context)
+            await show_game_brief(query)
 
         elif query.data == 'confirm_new_arc':
-            confirm_keyboard = [
-                [InlineKeyboardButton("🆕 Confirm Restart", callback_data='choose_arc_restart')],
-                [InlineKeyboardButton("❌ Cancel", callback_data='cancel_restart')]
-            ]
-            confirm_markup = InlineKeyboardMarkup(confirm_keyboard)
-            await query.message.reply_text(
-                "⚠️ Are you sure you want to start a new arc? This will erase your current progress in the selected arc.",
-                reply_markup=confirm_markup, parse_mode='HTML'
-            )
-
-        elif query.data == 'choose_arc_restart':
+            # Show options for selecting new arc (Survival or Narrative)
             arc_keyboard = [
-                [InlineKeyboardButton("🏝️ Restart Survival Arc", callback_data='restart_survival_arc')],
-                [InlineKeyboardButton("📖 Restart Narrative Arc (Coming Soon)", callback_data='restart_narrative_arc')]
+                [InlineKeyboardButton("🏝️ Start Survival Arc", callback_data='start_survival_arc')],
+                [InlineKeyboardButton("📖 Start Narrative Arc (Coming Soon)", callback_data='start_narrative_arc')]
             ]
             arc_markup = InlineKeyboardMarkup(arc_keyboard)
-            await query.message.reply_text(
-                "Select the arc you wish to restart. This will erase your progress in the specific arc.",
-                reply_markup=arc_markup, parse_mode='HTML'
+            await query.message.edit_text(
+                "⚠️ Choose the arc to start. Starting a new arc will erase any current progress.",
+                reply_markup=arc_markup, parse_mode=ParseMode.HTML
             )
 
-        elif query.data == 'restart_survival_arc':
-            await delete_player_progress(query.from_user.id, arc_type='survival', context=context)
-            player = Player(query.from_user.id)  # Reinitialize player for new survival arc
+        elif query.data == 'start_survival_arc':
+            # Start the Survival Arc and reset any existing progress
+            player = Player(user_id=query.from_user.id, name=query.from_user.first_name)
             await save_player(player)
-            await query.message.reply_text("🆕 Starting a new Survival Arc! Let’s see how you fare this time.")
-            await send_game_brief(query)
+            await query.message.edit_text("🆕 Starting a new Survival Arc! Let’s see how you fare this time.")
+            await show_game_brief(query)  # Transition to game brief
 
-        elif query.data == 'restart_narrative_arc' or query.data == 'narrative_arc':
-            await query.message.reply_text(
+        elif query.data == 'start_narrative_arc':
+            # Placeholder for Narrative Arc (Coming Soon)
+            await query.message.edit_text(
                 "📖 <b>Narrative Arc Coming Soon!</b>\n\n"
                 "Get ready for a unique, story-driven adventure where your choices shape the journey.",
-                parse_mode='HTML'
+                parse_mode=ParseMode.HTML
             )
 
         elif query.data == 'solo_arc':
-            await explore(update, context)  # Start exploration for Solo Arc
+            # Start Solo Arc
+            player = Player(user_id=query.from_user.id, name=query.from_user.first_name, arc_type='solo', started_adventure=True)
+            await save_player(player)
+            await query.message.edit_text("🧭 Starting Solo Expedition! Let’s see how you fare on your own.")
+            await explore(client, query.message)
 
-        elif query.data == 'explore_again':
-            await explore(update, context=context)  # Explore again for Solo Arc
-
-        elif query.data == 'cancel_restart':
-            initial_keyboard = [
-                [InlineKeyboardButton("▶️ Continue", callback_data='continue_arc')],
-                [InlineKeyboardButton("🔄 New Arc", callback_data='confirm_new_arc')],
-                [InlineKeyboardButton("🔀 Switch Arc", callback_data='narrative_arc')]
-            ]
-            initial_markup = InlineKeyboardMarkup(initial_keyboard)
-            await query.message.reply_text(
-                "Action canceled. You’re still in your current adventure.",
-                reply_markup=initial_markup
+        elif query.data == 'settings':
+            # Handle settings (you can add functionality here)
+            await query.message.edit_text(
+                "⚙️ <b>Settings</b>\n\nHere you can configure your preferences or manage your account.",
+                parse_mode=ParseMode.HTML
             )
+
     except Exception as e:
-        await query.message.reply_text(f"⚠️ An error occurred: {str(e)}")
+        await query.message.edit_text(f"⚠️ An error occurred: {str(e)}")  # Edit the message instead of sending a new one
 
 
-async def send_game_brief(query):
-    """
-    Sends a detailed game briefing message to the user after they click 'Start Adventure'.
-
-    Args:
-        query (telegram.CallbackQuery): The callback query object that triggered this function.
-    """
+async def show_game_brief(query: CallbackQuery):
+    # Show a brief introduction to the game when starting a new arc or adventure
     game_brief = (
         "🏝️ <b>Island Survival Adventure</b> 🏝️\n\n"
         "As a <b>castaway</b>, you must explore the island to find <b>essential items, food,</b> and <b>shelter</b> to survive.\n\n"
@@ -150,7 +114,13 @@ async def send_game_brief(query):
     )
     keyboard = [
         [InlineKeyboardButton("🧭 Solo Expedition", callback_data='solo_arc')],
-        [InlineKeyboardButton("📜 Story Adventure (Coming Soon)", callback_data='narrative_arc')]
+        [InlineKeyboardButton("📜 Story Adventure", callback_data='narrative_arc')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(text=game_brief, reply_markup=reply_markup, parse_mode='HTML')
+    await query.edit_message_text(text=game_brief, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
+
+
+# Register function to attach the start and callback query handlers
+def register(app: Client):
+    app.on_message(filters.command("start"))(start)
+    app.on_callback_query(filters.create(maintenance_mode_only))(button)

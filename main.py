@@ -1,15 +1,10 @@
-# main.py
 import logging
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, CallbackContext
-from config import BOT_TOKEN, MONGO_URI
+import asyncio
 from pymongo import MongoClient
-from handlers.start_handler import start, button
-from handlers.adventure_handler import explore, callback_handler, check_inventory
-from handlers.inventory_handler import inventory
-from handlers.help_handler import help_command
-from handlers.dev_handler import dev, delete_player_data
-from utils.decorators import maintenance_mode_only
+from pyrogram import Client, idle
+from config import MONGO_URI, API_ID, API_HASH, BOT_TOKEN
+from handlers import start_handler, inventory_handler, dev_handler
+from handlers import adventure_handler 
 
 # Set up logging
 logging.basicConfig(
@@ -19,35 +14,33 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Set up MongoDB connection
-client = MongoClient(MONGO_URI)
-db = client.get_database()
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client.get_database()
 
-async def on_startup(application):
-    # setup_db()  # Assuming setup_db initializes the database connection
-    logger.info("Database has been set up.")
+# Initialize Pyrogram client
+app = Client("island_gamebot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-async def maintenance_command(update: Update, context: CallbackContext):
-    # This function will be wrapped by the maintenance_mode_only decorator
-    pass
+# Function to set up logging when bot starts
+async def on_startup():
+    logger.info("Bot has started, and the database connection is set up.")
 
-def main():
-    application = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
+# Register handlers
+def register_handlers(app):
+    start_handler.register(app)
+    adventure_handler.register(app)
+    inventory_handler.register(app)
+    dev_handler.register(app)
+    logger.info("Handlers have been registered.")
 
-    # Add command handlers
-    application.add_handler(CommandHandler('start', start))
-    application.add_handler(CommandHandler('explore', explore))
-    application.add_handler(CommandHandler('inv', inventory))
-    application.add_handler(CommandHandler('help', help_command))
-    application.add_handler(CommandHandler('dev', dev))
-    application.add_handler(CommandHandler('Checkinv', check_inventory))
-    application.add_handler(CommandHandler('delete_player', delete_player_data))
-    application.add_handler(CommandHandler("mmode", maintenance_mode_only(maintenance_command)))
-    application.add_handler(CommandHandler("dmmode", maintenance_mode_only(maintenance_command)))
-    application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(CallbackQueryHandler(callback_handler))
+# Main function to run the bot
+async def start_bot():
+    async with app:
+        await on_startup()      # Log bot startup
+        register_handlers(app)   # Register all handlers
+        logger.info("Bot is now running.")
+        await idle()             # Keep the bot running
 
-    # Run the bot with polling
-    application.run_polling()
-
-if __name__ == '__main__':
-    main()
+# Run the bot
+if __name__ == "__main__":
+    app.run(start_bot())
+# In this snippet, we have a main.py file that initializes the Pyrogram client, sets up the MongoDB connection, and registers the handlers. The start_bot function is the main entry point for running the bot, where we first log the bot startup, register all handlers, and then start the bot with the idle method.

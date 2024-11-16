@@ -1,124 +1,51 @@
-[
-    {
-        "name": "Find a berry bush",
-        "description": "You find a bush full of berries.",
-        "outcomes": {
-            "gain_health": 10,
-            "gain_item": ["berries"]
-        }
-    },
-    {
-        "name": "Encounter a wild animal",
-        "description": "A wild animal appears!",
-        "outcomes": {
-            "lose_health": 20,
-            "gain_item": ["flee"]
-        }
-    },
-    {
-        "name": "Discover a hidden cave",
-        "description": "You discover a hidden cave filled with crystals.",
-        "outcomes": {
-            "gain_item": ["torch", "crystal"]
-        }
-    },
-    {
-        "name": "Meet a wandering merchant",
-        "description": "You meet a merchant selling rare items.",
-        "outcomes": {
-            "gain_item": ["mysterious potion"],
-            "lose_item": ["gold coins"]
-        }
-    },
-    {
-        "name": "Find a lost treasure",
-        "description": "You stumble upon an old treasure chest.",
-        "outcomes": {
-            "gain_item": ["gold coins", "ancient artifact"]
-        }
-    },
-    {
-        "name": "Get caught in a storm",
-        "description": "A sudden storm hits!",
-        "outcomes": {
-            "lose_health": 10,
-            "gain_item": ["wet clothes"]
-        }
-    },
-    {
-        "name": "Help a stranded traveler",
-        "description": "You find a traveler in need of assistance.",
-        "outcomes": {
-            "gain_health": 5,
-            "gain_item": ["thank you gift"]
-        }
-    },
-    {
-        "name": "Stumble upon a magical fountain",
-        "description": "You find a magical fountain that grants wishes.",
-        "outcomes": {
-            "gain_health": 20,
-            "gain_item": ["magic token"]
-        }
-    },
-    {
-        "name": "Discover an ancient ruin",
-        "description": "You explore the remnants of an ancient civilization.",
-        "outcomes": {
-            "gain_item": ["ancient relic", "scroll of knowledge"]
-        }
-    },
-    {
-        "name": "Find a fishing spot",
-        "description": "You discover a calm lake perfect for fishing.",
-        "outcomes": {
-            "gain_item": ["fish"],
-            "gain_health": 5
-        }
-    },
-    {
-        "name": "Trip and fall",
-        "description": "You trip over a rock and fall.",
-        "outcomes": {
-            "lose_health": 15,
-            "gain_item": ["injury bandage"]
-        }
-    },
-    {
-        "name": "Meet a friendly NPC",
-        "description": "A friendly villager offers you advice.",
-        "outcomes": {
-            "gain_health": 10,
-            "gain_item": ["useful tip"]
-        }
-    },
-    {
-        "name": "Find a lost artifact",
-        "description": "You unearth an ancient artifact buried beneath the sand.",
-        "outcomes": {
-            "gain_item": ["ancient coin", "mysterious stone"]
-        }
-    },
-    {
-        "name": "Camp under the stars",
-        "description": "You set up camp and gaze at the stars, feeling refreshed.",
-        "outcomes": {
-            "gain_health": 15
-        }
-    },
-    {
-        "name": "Fight off a bandit",
-        "description": "A bandit tries to steal from you, but you manage to defend yourself.",
-        "outcomes": {
-            "lose_health": 10,
-            "gain_item": ["bandit's dagger"]
-        }
-    },
-    {
-        "name": "Find a secret passage",
-        "description": "You find a hidden path that leads to a secluded clearing.",
-        "outcomes": {
-            "gain_item": ["map fragment"]
-        }
-    }
-]
+{
+    "Beach": [
+      "You find a patch of seaweed near the shore.",
+      "A crab pinches you, causing minor damage.",
+      "You spot a fish and manage to catch it.",
+      "High tides force you to retreat, ending your exploration early.",
+      "You uncover a small pearl inside a shell.",
+      "Strong winds scatter your collected items.",
+      "A shark fin appears near the shore, scaring you.",
+      "You dig up a clam buried in the sand.",
+      "You collect sea glass, glittering under the sunlight."
+    ],
+    "Mountain": [
+      "You stumble upon a rich vein of iron ore.",
+      "A goat charges at you, dealing minor damage.",
+      "You gather wild berries, avoiding thorny bushes.",
+      "Cold winds sap your endurance as you climb.",
+      "A rare Edelweiss plant catches your eye.",
+      "You narrowly avoid a rockfall.",
+      "You discover a hot spring, rejuvenating your stamina.",
+      "You spot an eagle feather stuck in a tree."
+    ],
+    "Caves": [
+      "You find a small pocket of glowstone.",
+      "A bat screeches and flies at you, causing minor health loss.",
+      "You narrowly avoid a cave-in while collecting resources.",
+      "A glowing mushroom lights your path.",
+      "You slip on wet rocks, losing stamina.",
+      "You discover a fossil embedded in the cave wall.",
+      "You harvest some cave fish from an underground pond."
+    ],
+    "Dark Forest": [
+      "You gather spider silk from a large web.",
+      "A venomous snake bites you, reducing health.",
+      "You find glowing mystic herbs.",
+      "A shadow beast stalks you from afar.",
+      "The forest hums, its presence unnerving you.",
+      "You harvest berries, but they might be poisonous.",
+      "You stumble upon an ancient tree with dark amber."
+    ],
+    "Desert": [
+      "You uncover an ancient relic buried in the sand.",
+      "A scorpion stings you, causing poison damage over time.",
+      "You collect cactus flesh for hydration.",
+      "A sandstorm blinds you, making navigation difficult.",
+      "You discover fossilized plants in the sand.",
+      "You dig up a rare Sunstone shimmering in the sunlight.",
+      "You find a scarab trapped in a crystal."
+    ]
+  }
+  
