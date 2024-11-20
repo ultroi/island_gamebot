@@ -1,0 +1,30 @@
+{
+    "max_health": {
+        "base": 50,
+        "per_level": 2,
+        "levels": {}
+    },
+    "max_stamina": {
+        "base": 50,
+        "per_level": 2
+    },
+    "stamina_usage": {
+        "min": 1,
+        "max": 5
+    },
+    "xp_gain": {
+        "per_item": 1,
+        "per_encounter": 2,
+        "level_multiplier": 2,
+        "value": 0
+    },
+    "level_requirements": {
+        "xp_per_level": 100,
+        "xp_increment_per_level": 10
+    },
+    "space_per_item": {
+        "common": 1,
+        "rare": 2,
+        "legendary": 3
+    }
+}

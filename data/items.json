@@ -1,0 +1,550 @@
+{
+    "items": [
+        {
+            "name": "Seaweed",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Fish",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Clam",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Crabs",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Kelp",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Oyster",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 2,
+            "location": "beach"
+        },
+        {
+            "name": "Wood",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Stone",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Shells",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Driftwood",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Pebbles",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Sea Glass",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Shark Tooth",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Coral",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Wet Sand",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Pearl",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "beach"
+        },
+        {
+            "name": "Herbs",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Wild Berries",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Mountain Water",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Edelweiss",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Pine Sap",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Iron Ore",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Coal",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Granite",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Rough Stone",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Copper Ore",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Mountain Goat Wool",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Flint",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Sulfur",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Snow",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Eagle Feather",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "mountain"
+        },
+        {
+            "name": "Rare Mushrooms",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Cave Fish",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Glowcap Mushrooms",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Spider Eggs",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Gold Ore",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Silver Ore",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Bat Guano",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Cave Gems",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Stalactites",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Glowstone",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Amethyst",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "caves"
+        },
+        {
+            "name": "Wild Berries",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Bloodroot",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Nightshade",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Twilight Flowers",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Tree Sap",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Mystic Herbs",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Moonlight Flowers",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Ghost Mushrooms",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Shadowberries",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Enchanted Vines",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Dark Wood",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Spider Silk",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Venom Sacs",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Wolf Fur",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Raven Feathers",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Spirit Stones",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Dark Amber",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Echoing Stones",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "dark forest"
+        },
+        {
+            "name": "Desert Sage",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Fossilized Plants",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Desert Flowers",
+            "category": "food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Cactus Flesh",
+            "category": "food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Sand",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Rare Minerals",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Salt",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Scorpion Venom",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Ancient Relics",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Dried Bones",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Obsidian Shards",
+            "category": "non-food",
+            "type": "common",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Quicksand Samples",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Snake Skin",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Crystal Sands",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Heatstones",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Sunstone",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Scarabs",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        },
+        {
+            "name": "Golden Sand Grains",
+            "category": "non-food",
+            "type": "rare",
+            "space_per_item": 1,
+            "location": "desert"
+        }
+    ]
+}

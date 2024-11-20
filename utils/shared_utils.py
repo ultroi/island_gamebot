@@ -1,30 +1,68 @@
-import random
 import math
-from collections import Counter
 import json
+import logging
+import os
 
-with open('/workspaces/island_gamebot/data/resources.json') as f:
+with open('/workspaces/island_gamebot/data/config.json') as f:
     resources = json.load(f)
 
-# Experience points required for each level
-XP_TABLE = {
-    1: 100,
-    5: 500,
-    10: 1500,
-    15: 3000,
-    20: 6000,
-    30: 12000,
-    40: 25000,
-    50: 50000
-}
+def load_config():
+    config_path = "/workspaces/island_gamebot/data/config.json"
+    if not os.path.exists(config_path):
+        logging.error(f"Configuration file {config_path} not found.")
+        return {}
+    try:
+        with open(config_path, "r") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        logging.error("Configuration file is not a valid JSON.")
+        return {}
 
 
-def calculate_max_xp(level: int) -> int:
-    """Calculate the maximum experience required for the next level based on XP_TABLE."""
-    for lvl in sorted(XP_TABLE.keys(), reverse=True):
-        if level >= lvl:
-            return XP_TABLE[lvl]
-    return 100  # Default value if level is below the lowest key in XP_TABLE
+# Function to calculate the max XP based on level difference (using developer config or default)
+def calculate_max_xp(current_level: int, next_level: int) -> int:
+    """
+    Calculate the XP required to level up based on the difference between levels.
+    Uses developer's configuration or default calculation.
+    """
+    config = load_config()
+
+    # Get the XP increment per level from the developer's configuration
+    xp_increment_per_level = config.get("level_requirements", {}).get("xp_per_level")
+    # Get the XP multiplier for level-ups (if configured)
+    xp_multiplier = config.get("xp_gain", {}).get("level_multiplier")
+
+
+    if xp_increment_per_level is None:
+        logging.error("XP increment per level is not defined in the configuration.", exc_info=True)
+        return 0
+    # Calculate the level difference
+    level_difference = next_level - current_level
+    if level_difference <= 0:
+        logging.error(f"Invalid level difference: {next_level} must be greater than {current_level}.")
+        return 0  # Return 0 if level difference is invalid
+
+    # Calculate the base XP for this level-up difference
+    base_xp_required = xp_increment_per_level * level_difference
+
+    # Apply the XP multiplier if set in the config
+    max_xp = base_xp_required * xp_multiplier
+    logging.info(f"XP required for leveling up from level {current_level} to level {next_level}: {max_xp}")
+    return max_xp
+
+# Calculate XP based on the config
+def calculate_xp(player, config):
+    base_xp = config['xp_gain']['per_item']
+    level_multiplier = config['xp_gain']['level_multiplier']
+    return base_xp + (level_multiplier ** (player.level - 1))
+
+# Function to calculate the total XP required to reach the next level from level 1
+def get_level_xp(current_level: int) -> int:
+    """Calculate the total XP required to reach the next level from level 1."""
+    total_xp = 0
+    for level in range(1, current_level + 1):
+        total_xp += calculate_max_xp(level, level + 1)
+    return total_xp
 
 def gain_experience(player, xp: int):
     """Add experience points to the player and handle level up if necessary."""
@@ -33,10 +71,21 @@ def gain_experience(player, xp: int):
         player.experience -= player.max_experience
         player.level += 1
         player.max_experience = calculate_max_xp(player.level)
-        player.max_health = 100 + (player.level - 1) * 10
-        player.max_stamina = 50 + (player.level - 1) * 5
+        player.max_health = get_max_health(player.level, load_config())
+        player.max_stamina = get_max_stamina(player.level, load_config())
         player.health = player.max_health
         player.stamina = player.max_stamina
+
+# Get max health based on player level
+def get_max_health(level, config):
+    base_health = config['max_health']['base']
+    health_per_level = config['max_health']['per_level']
+    return base_health + (level - 1) * health_per_level
+
+def get_max_stamina(level, config):
+    base_stamina = config['max_stamina']['base']
+    stamina_per_level = config['max_stamina']['per_level']
+    return base_stamina + (level - 1) * stamina_per_level
 
 def get_health_bar(health: int, max_health: int) -> str:
     health_ratio = health / max_health
@@ -48,76 +97,9 @@ def get_health_bar(health: int, max_health: int) -> str:
 
 def get_stamina_bar(stamina: int, max_stamina: int) -> str:
     stamina_ratio = stamina / max_stamina
-    total_blocks = 8  # Length of stamina bar (total blocks)
+    total_blocks = 7  # Length of stamina bar (total blocks)
     filled_blocks = math.floor(stamina_ratio * total_blocks)
     
     # Full stamina bar with positive (yellow) and negative (gray) sections
     stamina_bar = "▮" * filled_blocks + "▯" * (total_blocks - filled_blocks)
     return stamina_bar
-    
-def get_inventory_capacity(level, area):
-    # Base inventory capacity based on level
-    if level <= 10:
-        base_capacity = 10
-    elif level <= 20:
-        base_capacity = 15
-    elif level <= 30:
-        base_capacity = 20
-    elif level <= 40:
-        base_capacity = 25
-    else:
-        base_capacity = 30
-
-    # Define the available food and non-food items for the selected area
-    food_items_common = resources[area]["food_items"]["common"]
-    food_items_rare = resources[area]["food_items"]["rare"]
-    non_food_items_common = resources[area]["non_food_items"]["common"]
-    non_food_items_rare = resources[area]["non_food_items"]["rare"]
-
-    # Define food and non-food inventory based on the total available slots
-    food_inventory = []
-    non_food_inventory = []
-
-    # Randomly distribute the total capacity between food and non-food slots
-    num_food_items = random.randint(0, base_capacity)  # Random number of food items
-    num_non_food_items = base_capacity - num_food_items  # The rest are non-food items
-
-    # Select food items (common and rare)
-    food_inventory.extend(random.choices(food_items_common, k=num_food_items // 2))  # Half common
-    food_inventory.extend(random.choices(food_items_rare, k=num_food_items // 2))    # Half rare
-
-    # Select non-food items (common and rare)
-    non_food_inventory.extend(random.choices(non_food_items_common, k=num_non_food_items // 2))  # Half common
-    non_food_inventory.extend(random.choices(non_food_items_rare, k=num_non_food_items // 2))    # Half rare
-
-    # Return the final inventory structure with item slots allocated based on the player's level
-    return {
-        "total_slots": base_capacity,
-        "food_slots": num_food_items,
-        "non_food_slots": num_non_food_items,
-        "food_inventory": food_inventory,
-        "non_food_inventory": non_food_inventory
-    }
-
-# Function to calculate remaining space
-def get_inventory_space(player):
-    # Base capacity based on level
-    if player.level <= 10:
-        base_capacity = 10
-    elif player.level <= 20:
-        base_capacity = 15
-    elif player.level <= 30:
-        base_capacity = 20
-    elif player.level <= 40:
-        base_capacity = 25
-    else:
-        base_capacity = 30
-
-    # Calculate space used in inventory
-    item_counts = Counter(player.inventory)
-    used_space = sum(item_counts.values())  # Total number of items in the inventory
-
-    # Remaining space
-    remaining_space = max(0, base_capacity - used_space)
-
-    return used_space, remaining_space, base_capacity
