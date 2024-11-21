@@ -1,51 +1,202 @@
 {
-    "Beach": [
-      "You find a patch of seaweed near the shore.",
-      "A crab pinches you, causing minor damage.",
-      "You spot a fish and manage to catch it.",
-      "High tides force you to retreat, ending your exploration early.",
-      "You uncover a small pearl inside a shell.",
-      "Strong winds scatter your collected items.",
-      "A shark fin appears near the shore, scaring you.",
-      "You dig up a clam buried in the sand.",
-      "You collect sea glass, glittering under the sunlight."
-    ],
-    "Mountain": [
-      "You stumble upon a rich vein of iron ore.",
-      "A goat charges at you, dealing minor damage.",
-      "You gather wild berries, avoiding thorny bushes.",
-      "Cold winds sap your endurance as you climb.",
-      "A rare Edelweiss plant catches your eye.",
-      "You narrowly avoid a rockfall.",
-      "You discover a hot spring, rejuvenating your stamina.",
-      "You spot an eagle feather stuck in a tree."
-    ],
-    "Caves": [
-      "You find a small pocket of glowstone.",
-      "A bat screeches and flies at you, causing minor health loss.",
-      "You narrowly avoid a cave-in while collecting resources.",
-      "A glowing mushroom lights your path.",
-      "You slip on wet rocks, losing stamina.",
-      "You discover a fossil embedded in the cave wall.",
-      "You harvest some cave fish from an underground pond."
-    ],
-    "Dark Forest": [
-      "You gather spider silk from a large web.",
-      "A venomous snake bites you, reducing health.",
-      "You find glowing mystic herbs.",
-      "A shadow beast stalks you from afar.",
-      "The forest hums, its presence unnerving you.",
-      "You harvest berries, but they might be poisonous.",
-      "You stumble upon an ancient tree with dark amber."
-    ],
-    "Desert": [
-      "You uncover an ancient relic buried in the sand.",
-      "A scorpion stings you, causing poison damage over time.",
-      "You collect cactus flesh for hydration.",
-      "A sandstorm blinds you, making navigation difficult.",
-      "You discover fossilized plants in the sand.",
-      "You dig up a rare Sunstone shimmering in the sunlight.",
-      "You find a scarab trapped in a crystal."
-    ]
-  }
-  
+  "Beach": [
+    {
+      "type": "resource",
+      "event": "You find a patch of seaweed near the shore.",
+      "effect": "gain 1 Seaweed"
+    },
+    {
+      "type": "encounter",
+      "event": "A crab pinches you, causing minor damage.",
+      "effect": "lose 5 health"
+    },
+    {
+      "type": "resource",
+      "event": "You spot a fish and manage to catch it.",
+      "effect": "gain 1 Fish"
+    },
+    {
+      "type": "challenge",
+      "event": "High tides force you to retreat, ending your exploration early.",
+      "effect": "lose 1 turn"
+    },
+    {
+      "type": "resource",
+      "event": "You uncover a small pearl inside a shell.",
+      "effect": "gain 1 Pearl (rare)"
+    },
+    {
+      "type": "challenge",
+      "event": "Strong winds scatter your collected items.",
+      "effect": "lose 1 item (random)"
+    },
+    {
+      "type": "encounter",
+      "event": "A shark fin appears near the shore, scaring you.",
+      "effect": "lose 10 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "You dig up a clam buried in the sand.",
+      "effect": "gain 1 Clam"
+    },
+    {
+      "type": "resource",
+      "event": "You collect sea glass, glittering under the sunlight.",
+      "effect": "gain 1 Sea Glass"
+    }
+  ],
+  "Mountain": [
+    {
+      "type": "resource",
+      "event": "You stumble upon a rich vein of iron ore.",
+      "effect": "gain 1 Iron Ore"
+    },
+    {
+      "type": "encounter",
+      "event": "A goat charges at you, dealing minor damage.",
+      "effect": "lose 5 health"
+    },
+    {
+      "type": "resource",
+      "event": "You gather wild berries, avoiding thorny bushes.",
+      "effect": "gain 1 Berry"
+    },
+    {
+      "type": "challenge",
+      "event": "Cold winds sap your endurance as you climb.",
+      "effect": "lose 5 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "A rare Edelweiss plant catches your eye.",
+      "effect": "gain 1 Edelweiss (rare)"
+    },
+    {
+      "type": "challenge",
+      "event": "You narrowly avoid a rockfall.",
+      "effect": "lose 1 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "You discover a hot spring, rejuvenating your stamina.",
+      "effect": "gain 10 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "You spot an eagle feather stuck in a tree.",
+      "effect": "gain 1 Eagle Feather (rare)"
+    }
+  ],
+  "Caves": [
+    {
+      "type": "resource",
+      "event": "You find a small pocket of glowstone.",
+      "effect": "gain 1 Glowstone"
+    },
+    {
+      "type": "encounter",
+      "event": "A bat screeches and flies at you, causing minor health loss.",
+      "effect": "lose 5 health"
+    },
+    {
+      "type": "challenge",
+      "event": "You narrowly avoid a cave-in while collecting resources.",
+      "effect": "lose 1 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "A glowing mushroom lights your path.",
+      "effect": "gain 1 Glowcap Mushroom"
+    },
+    {
+      "type": "challenge",
+      "event": "You slip on wet rocks, losing stamina.",
+      "effect": "lose 10 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "You discover a fossil embedded in the cave wall.",
+      "effect": "gain 1 Fossil (rare)"
+    },
+    {
+      "type": "resource",
+      "event": "You harvest some cave fish from an underground pond.",
+      "effect": "gain 1 Cave Fish"
+    }
+  ],
+  "Dark Forest": [
+    {
+      "type": "resource",
+      "event": "You gather spider silk from a large web.",
+      "effect": "gain 1 Spider Silk"
+    },
+    {
+      "type": "encounter",
+      "event": "A venomous snake bites you, reducing health.",
+      "effect": "lose 10 health"
+    },
+    {
+      "type": "resource",
+      "event": "You find glowing mystic herbs.",
+      "effect": "gain 1 Mystic Herb (rare)"
+    },
+    {
+      "type": "encounter",
+      "event": "A shadow beast stalks you from afar.",
+      "effect": "lose 5 stamina"
+    },
+    {
+      "type": "challenge",
+      "event": "The forest hums, its presence unnerving you.",
+      "effect": "lose 5 stamina"
+    },
+    {
+      "type": "resource",
+      "event": "You harvest berries, but they might be poisonous.",
+      "effect": "gain 1 Berry (possibly poisonous)"
+    },
+    {
+      "type": "resource",
+      "event": "You stumble upon an ancient tree with dark amber.",
+      "effect": "gain 1 Dark Amber (rare)"
+    }
+  ],
+  "Desert": [
+    {
+      "type": "resource",
+      "event": "You uncover an ancient relic buried in the sand.",
+      "effect": "gain 1 Ancient Relic (rare)"
+    },
+    {
+      "type": "encounter",
+      "event": "A scorpion stings you, causing poison damage over time.",
+      "effect": "lose 5 health every turn for 3 turns"
+    },
+    {
+      "type": "resource",
+      "event": "You collect cactus flesh for hydration.",
+      "effect": "gain 1 Cactus Flesh"
+    },
+    {
+      "type": "challenge",
+      "event": "A sandstorm blinds you, making navigation difficult.",
+      "effect": "lose 1 turn"
+    },
+    {
+      "type": "resource",
+      "event": "You discover fossilized plants in the sand.",
+      "effect": "gain 1 Fossilized Plant (rare)"
+    },
+    {
+      "type": "resource",
+      "event": "You dig up a rare Sunstone shimmering in the sunlight.",
+      "effect": "gain 1 Sunstone (rare)"
+    },
+    {
+      "type": "resource",
+      "event": "You find a scarab trapped in a crystal.",
+      "effect": "gain 1 Scarab Crystal (rare)"
+    }
+  ]
+}

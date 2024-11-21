@@ -1,157 +1,121 @@
 {
-    "Beach": {
-      "food_items": {
-        "common": [
-          { "item": "Seaweed", "type": "Stamina" },
-          { "item": "Fish", "type": "Both" },
-          { "item": "Clam", "type": "Both" },
-          { "item": "Crabs", "type": "Both" },
-          { "item": "Kelp", "type": "Health" }
-        ],
-        "rare": [
-          { "item": "Oyster", "type": "Both" }
-        ]
-      },
-      "non_food_items": {
-        "common": [
-          { "item": "Wood", "type": "Neutral" },
-          { "item": "Stone", "type": "Neutral" },
-          { "item": "Shells", "type": "Neutral" },
-          { "item": "Driftwood", "type": "Neutral" },
-          { "item": "Pebbles", "type": "Neutral" }
-        ],
-        "rare": [
-          { "item": "Sea Glass", "type": "Neutral" },
-          { "item": "Shark Tooth", "type": "Neutral" },
-          { "item": "Coral", "type": "Neutral" },
-          { "item": "Wet Sand", "type": "Neutral" },
-          { "item": "Pearl", "type": "Neutral" }
-        ]
-      }
+  "Beach": {
+    "food_items": {
+      "common": [
+        { "item": "Seaweed", "type": "Stamina" },
+        { "item": "Fish", "type": "Both" },
+        { "item": "Clam", "type": "Both" },
+        { "item": "Kelp", "type": "Health" }
+      ],
+      "rare": [
+        { "item": "Oyster", "type": "Both" }
+      ]
     },
-    "Mountain": {
-      "food_items": {
-        "common": [
-          { "item": "Herbs", "type": "Health" },
-          { "item": "Wild Berries", "type": "Health" },
-          { "item": "Mountain Water", "type": "Stamina" }
-        ],
-        "rare": [
-          { "item": "Edelweiss", "type": "Health" },
-          { "item": "Pine Sap", "type": "Health" }
-        ]
-      },
-      "non_food_items": {
-        "common": [
-          { "item": "Iron Ore", "type": "Neutral" },
-          { "item": "Coal", "type": "Neutral" },
-          { "item": "Granite", "type": "Neutral" },
-          { "item": "Rough Stone", "type": "Neutral" }
-        ],
-        "rare": [
-          { "item": "Copper Ore", "type": "Neutral" },
-          { "item": "Mountain Goat Wool", "type": "Neutral" },
-          { "item": "Flint", "type": "Neutral" },
-          { "item": "Sulfur", "type": "Neutral" },
-          { "item": "Snow", "type": "Neutral" },
-          { "item": "Eagle Feather", "type": "Neutral" }
-        ]
-      }
+    "non_food_items": {
+      "common": [
+        { "item": "Wood", "type": "Neutral" },
+        { "item": "Stone", "type": "Neutral" },
+        { "item": "Shells", "type": "Neutral" },
+        { "item": "Driftwood", "type": "Neutral" }
+      ],
+      "rare": [
+        { "item": "Sea Glass", "type": "Neutral" },
+        { "item": "Pearl", "type": "Neutral" }
+      ]
+    }
+  },
+  "Mountain": {
+    "food_items": {
+      "common": [
+        { "item": "Herbs", "type": "Health" },
+        { "item": "Wild Berries", "type": "Health" },
+        { "item": "Mountain Water", "type": "Stamina" }
+      ],
+      "rare": [
+        { "item": "Edelweiss", "type": "Health" }
+      ]
     },
-    "Caves": {
-      "food_items": {
-        "common": [
-          { "item": "Rare Mushrooms", "type": "Both" },
-          { "item": "Cave Fish", "type": "Both" }
-        ],
-        "rare": [
-          { "item": "Glowcap Mushrooms", "type": "Both" },
-          { "item": "Spider Eggs", "type": "Health" }
-        ]
-      },
-      "non_food_items": {
-        "common": [
-          { "item": "Gold Ore", "type": "Neutral" },
-          { "item": "Silver Ore", "type": "Neutral" },
-          { "item": "Bat Guano", "type": "Neutral" },
-          { "item": "Cave Gems", "type": "Neutral" },
-          { "item": "Stalactites", "type": "Neutral" }
-        ],
-        "rare": [
-          { "item": "Glowstone", "type": "Neutral" },
-          { "item": "Fossils", "type": "Neutral" },
-          { "item": "Underground Water", "type": "Stamina" },
-          { "item": "Crystal Shards", "type": "Neutral" },
-          { "item": "Obsidian", "type": "Neutral" },
-          { "item": "Spelunker's Moss", "type": "Health" },
-          { "item": "Salt Deposits", "type": "Neutral" },
-          { "item": "Amethyst", "type": "Neutral" }
-        ]
-      }
+    "non_food_items": {
+      "common": [
+        { "item": "Iron Ore", "type": "Neutral" },
+        { "item": "Coal", "type": "Neutral" }
+      ],
+      "rare": [
+        { "item": "Copper Ore", "type": "Neutral" },
+        { "item": "Mountain Goat Wool", "type": "Neutral" }
+      ]
+    }
+  },
+  "Caves": {
+    "food_items": {
+      "common": [
+        { "item": "Rare Mushrooms", "type": "Both" },
+        { "item": "Cave Fish", "type": "Both" }
+      ],
+      "rare": [
+        { "item": "Glowcap Mushrooms", "type": "Both" }
+      ]
     },
-    "Dark Forest": {
-      "food_items": {
-        "common": [
-          { "item": "Wild Berries", "type": "Health" },
-          { "item": "Bloodroot", "type": "Health" },
-          { "item": "Nightshade", "type": "Health" },
-          { "item": "Twilight Flowers", "type": "Health" },
-          { "item": "Tree Sap", "type": "Health" }
-        ],
-        "rare": [
-          { "item": "Mystic Herbs", "type": "Health" },
-          { "item": "Moonlight Flowers", "type": "Health" },
-          { "item": "Ghost Mushrooms", "type": "Both" },
-          { "item": "Shadowberries", "type": "Health" },
-          { "item": "Enchanted Vines", "type": "Both" }
-        ]
-      },
-      "non_food_items": {
-        "common": [
-          { "item": "Dark Wood", "type": "Neutral" },
-          { "item": "Spider Silk", "type": "Neutral" },
-          { "item": "Venom Sacs", "type": "Neutral" },
-          { "item": "Wolf Fur", "type": "Neutral" }
-        ],
-        "rare": [
-          { "item": "Raven Feathers", "type": "Neutral" },
-          { "item": "Spirit Stones", "type": "Neutral" },
-          { "item": "Dark Amber", "type": "Neutral" },
-          { "item": "Echoing Stones", "type": "Neutral" }
-        ]
-      }
+    "non_food_items": {
+      "common": [
+        { "item": "Gold Ore", "type": "Neutral" },
+        { "item": "Silver Ore", "type": "Neutral" },
+        { "item": "Cave Gems", "type": "Neutral" }
+      ],
+      "rare": [
+        { "item": "Glowstone", "type": "Neutral" },
+        { "item": "Crystal Shards", "type": "Neutral" },
+        { "item": "Amethyst", "type": "Neutral" }
+      ]
+    }
+  },
+  "Dark Forest": {
+    "food_items": {
+      "common": [
+        { "item": "Wild Berries", "type": "Health" },
+        { "item": "Bloodroot", "type": "Health" },
+        { "item": "Nightshade", "type": "Health" },
+        { "item": "Twilight Flowers", "type": "Health" }
+      ],
+      "rare": [
+        { "item": "Mystic Herbs", "type": "Health" },
+        { "item": "Moonlight Flowers", "type": "Health" },
+        { "item": "Ghost Mushrooms", "type": "Both" }
+      ]
     },
-    "Desert": {
-      "food_items": {
-        "common": [
-          { "item": "Desert Sage", "type": "Health" },
-          { "item": "Fossilized Plants", "type": "Health" },
-          { "item": "Desert Flowers", "type": "Health" }
-        ],
-        "rare": [
-          { "item": "Cactus Flesh", "type": "Stamina" }
-        ]
-      },
-      "non_food_items": {
-        "common": [
-          { "item": "Sand", "type": "Neutral" },
-          { "item": "Rare Minerals", "type": "Neutral" },
-          { "item": "Salt", "type": "Neutral" },
-          { "item": "Scorpion Venom", "type": "Neutral" },
-          { "item": "Ancient Relics", "type": "Neutral" },
-          { "item": "Dried Bones", "type": "Neutral" },
-          { "item": "Obsidian Shards", "type": "Neutral" }
-        ],
-        "rare": [
-          { "item": "Quicksand Samples", "type": "Neutral" },
-          { "item": "Snake Skin", "type": "Neutral" },
-          { "item": "Crystal Sands", "type": "Neutral" },
-          { "item": "Heatstones", "type": "Stamina" },
-          { "item": "Sunstone", "type": "Stamina" },
-          { "item": "Scarabs", "type": "Neutral" },
-          { "item": "Golden Sand Grains", "type": "Neutral" }
-        ]
-      }
+    "non_food_items": {
+      "common": [
+        { "item": "Dark Wood", "type": "Neutral" },
+        { "item": "Spider Silk", "type": "Neutral" },
+        { "item": "Venom Sacs", "type": "Neutral" }
+      ],
+      "rare": [
+        { "item": "Spirit Stones", "type": "Neutral" },
+        { "item": "Dark Amber", "type": "Neutral" }
+      ]
+    }
+  },
+  "Desert": {
+    "food_items": {
+      "common": [
+        { "item": "Desert Sage", "type": "Health" },
+        { "item": "Fossilized Plants", "type": "Health" }
+      ],
+      "rare": [
+        { "item": "Cactus Flesh", "type": "Stamina" }
+      ]
+    },
+    "non_food_items": {
+      "common": [
+        { "item": "Sand", "type": "Neutral" },
+        { "item": "Rare Minerals", "type": "Neutral" },
+        { "item": "Scorpion Venom", "type": "Neutral" }
+      ],
+      "rare": [
+        { "item": "Snake Skin", "type": "Neutral" },
+        { "item": "Heatstones", "type": "Stamina" },
+        { "item": "Sunstone", "type": "Stamina" }
+      ]
     }
   }
-  
+}

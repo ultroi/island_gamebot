@@ -6,7 +6,7 @@ from pyrogram.handlers import CallbackQueryHandler
 from pyrogram.enums import ParseMode
 from utils.db_utils import load_player, save_player
 from utils.decorators import maintenance_mode_only
-from utils.shared_utils import get_health_bar, get_stamina_bar, get_max_health
+from utils.shared_utils import get_health_bar, get_stamina_bar
 from handlers.inventory_handler import inventory_command_handler
 from utils.inventory_utils import get_inventory_capacity
 import json
@@ -25,7 +25,7 @@ with open('/workspaces/island_gamebot/data/config.json') as f:
 
 
 # Handle player death and restart the game
-async def handle_player_death(player, message):
+async def handle_player_death(client: Client, player, message):
     player.stamina = config["max_stamina"]["base"] + (player.level * config["max_stamina"]["per_level"])  # Restore stamina
     player.inventory.clear()  # Clear inventory
     await save_player(player)
@@ -53,20 +53,11 @@ async def explore(client: Client, message: Message):
 
     if not player.started_adventure:
         player.started_adventure = True
-        await save_player(player)
+        await save_player(client, player)
         logging.info(f"Player {player.name} has started a new adventure.")
 
     # Determine the current location based on the player's exploration progress
-    if player.exploration_progress < 10:
-        current_location = "Beach"
-    elif player.exploration_progress < 20:
-        current_location = "Mountain"
-    elif player.exploration_progress < 30:
-        current_location = "Caves"
-    elif player.exploration_progress < 40:
-        current_location = "Dark Forest"
-    else:
-        current_location = "Desert"
+    current_location = get_location_based_on_progress(player)
 
     # Calculate max health and stamina based on the current level
     player.max_health = config["max_health"]["base"] + (player.level * config["max_health"]["per_level"])
@@ -76,8 +67,7 @@ async def explore(client: Client, message: Message):
     inventory_capacity = get_inventory_capacity(player, current_location, config, items_data)
     # Check if player has enough capacity for new items
     if len(player.inventory) < inventory_capacity:
-        # Proceed with item collection and exploration logic
-        event_message, resources_collected, xp_gained, item_message = handle_exploration_event(player, current_location)
+        event_message, _, xp_gained, item_message = handle_exploration_event(player, current_location)
     else:
         await message.reply("Your inventory is full. You need to make space before you can explore further.")
         return
@@ -97,7 +87,7 @@ async def explore(client: Client, message: Message):
 
     # Ensure health does not drop below 0
     if player.health <= 0:
-        await handle_player_death(player, message)
+        await handle_player_death(client, player, message)
         return
 
     # Add XP gained from exploration
@@ -110,7 +100,7 @@ async def explore(client: Client, message: Message):
         logging.info(f"Player {player.name} leveled up to level {player.level}")
 
     # Save player data after all updates
-    await save_player(player)
+    await save_player(client, player)
 
     try:
         # Reply with exploration message
@@ -136,6 +126,21 @@ async def explore(client: Client, message: Message):
     except Exception as e:
         logging.error(f"An error occurred during exploration: {e}")
         await message.reply("An error occurred. Please try again later.")
+
+
+# Get the location based on the player's exploration progress
+def get_location_based_on_progress(player):
+    if player.exploration_progress < 10:
+        return "Beach"
+    elif player.exploration_progress < 20:
+        return "Mountain"
+    elif player.exploration_progress < 30:
+        return "Caves"
+    elif player.exploration_progress < 40:
+        return "Dark Forest"
+    else:
+        return "Desert"
+
 
 # Handle exploration event
 def handle_exploration_event(player, current_location):
@@ -190,28 +195,9 @@ def handle_exploration_event(player, current_location):
         item_message_parts.append(f"{item_name} (x{count})")
     item_message = "\n".join(item_message_parts) if item_message_parts else "None"
 
-    # Choose a random event message if available
-    if current_location in events:
-        encounter_message = random.choice(events[current_location])
-
     return encounter_message, resources_collected, total_xp_gain, item_message
 
-
-# Check inventory function
-async def check_inventory(client: Client, query: CallbackQuery):
-    await query.answer()
-
-    try:
-        if query.data == "show_inventory":
-            await inventory_command_handler(query)
-
-    except Exception as e:
-        logging.error(f"An error occurred in check_inventory: {e}")
-        await query.message.reply(
-            "An error occurred while checking your inventory. Please try again later."
-        )
 
 # Register function for explore command in main.py
 def register(app: Client):
     app.on_message(filters.command("explore") & maintenance_mode_only)(explore)
-    app.add_handler(CallbackQueryHandler(check_inventory))

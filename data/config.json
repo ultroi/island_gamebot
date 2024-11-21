@@ -1,30 +1,63 @@
 {
     "max_health": {
-        "base": 50,
-        "per_level": 2,
-        "levels": {}
+        "base": 50,  
+        "per_level": 2,  
+        "levels": {}  
     },
     "max_stamina": {
-        "base": 50,
-        "per_level": 2
+        "base": 50,   
+        "per_level": 2  
     },
     "stamina_usage": {
-        "min": 1,
-        "max": 5
+        "min": 1,   
+        "max": 5   
     },
     "xp_gain": {
-        "per_item": 1,
-        "per_encounter": 2,
-        "level_multiplier": 2,
-        "value": 0
+        "per_item": 1,   
+        "per_encounter": 2,   
+        "level_multiplier": 2,   
+        "value": 0   
     },
     "level_requirements": {
-        "xp_per_level": 100,
-        "xp_increment_per_level": 10
+        "xp_per_level": 100,  
+        "xp_increment_per_level": 10,   
+        "level_cap": 50
     },
-    "space_per_item": {
-        "common": 1,
-        "rare": 2,
-        "legendary": 3
+    "space_per_item": { 
+        "common": 1,   
+        "rare": 2,   
+        "legendary": 3   
+    },
+    "item_types": {
+        "healing": {   
+            "min_health_restore": 10,   
+            "max_health_restore": 30  
+        },
+        "mana": {   
+            "min_mana_restore": 5,
+            "max_mana_restore": 15
+        }
+    },
+    "encounter_difficulty": {
+        "easy": {
+            "xp_reward": 5,   
+            "stamina_cost": 3   
+        },
+        "medium": {
+            "xp_reward": 10,
+            "stamina_cost": 5
+        },
+        "hard": {
+            "xp_reward": 20,
+            "stamina_cost": 10
+        }
+    },
+    "gameplay_settings": {
+        "max_players": 10,   
+        "difficulty": "normal",   
+        "daily_rewards": {
+            "xp": 50,    
+            "items": ["common", "rare"]   
+        }
     }
 }

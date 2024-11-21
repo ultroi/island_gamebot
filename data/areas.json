@@ -1,33 +1,92 @@
 {
-    "Beach": {
-      "description": "A sandy shore with gentle waves, scattered driftwood, and occasional crabs. Perfect for beginner survivors.",
-      "level_range": [1, 10],
-      "challenges": ["Heat Exhaustion", "High Tides", "Crab Swarms", "Strong Winds"],
-      "available_resources": ["Wood", "Seaweed", "Shells", "Fish", "Driftwood", "Saltwater"]
-    },
-    "Mountain": {
-      "description": "Steep cliffs with chilling winds, offering rich ores but home to dangerous wildlife.",
-      "level_range": [11, 20],
-      "challenges": ["Steep Slopes", "Avalanches", "Wild Animals", "Thin Air"],
-      "available_resources": ["Iron Ore", "Coal", "Herbs", "Rock Crystals", "Pine Sap", "Snow"]
-    },
-    "Caves": {
-      "description": "Dark and damp caves filled with treasures, but fraught with hidden dangers like cave-ins and venomous creatures.",
-      "level_range": [21, 30],
-      "challenges": ["Bats", "Cave-Ins", "Darkness", "Poisonous Pools"],
-      "available_resources": ["Gold Ore", "Silver Ore", "Glowstone", "Fossils", "Crystal Shards", "Glowcap Mushrooms"]
-    },
-    "Dark Forest": {
-      "description": "An ominous forest cloaked in shadows, brimming with magical plants and ferocious creatures.",
-      "level_range": [31, 40],
-      "challenges": ["Eerie Silence", "Poisonous Plants", "Ambush Predators", "Shadow Beasts"],
-      "available_resources": ["Mystic Herbs", "Dark Wood", "Spider Silk", "Enchanted Vines", "Nightshade", "Spirit Stones"]
-    },
-    "Desert": {
-      "description": "A vast, arid landscape with scorching heat, offering rare treasures for the bold adventurer.",
-      "level_range": [41, 50],
-      "challenges": ["Extreme Heat", "Sandstorms", "Quicksand", "Poisonous Creatures"],
-      "available_resources": ["Sand", "Cactus Flesh", "Rare Minerals", "Ancient Relics", "Sunstone", "Golden Sand Grains"]
-    }
+  "Beach": {
+    "description": "A serene sandy shore with gentle waves lapping against the coastline, scattered driftwood, and occasional crabs scuttling along. A peaceful yet challenging environment for new survivors.",
+    "level_range": [1, 10],
+    "challenges": [
+      "Heat Exhaustion from the sun",
+      "Rising Tides that may flood your camp",
+      "Swarms of Crabs that may attack in groups",
+      "Unpredictable Strong Winds that make sheltering difficult"
+    ],
+    "available_resources": [
+      { "name": "Wood", "type": "non-food", "category": "common" },
+      { "name": "Seaweed", "type": "food", "category": "common" },
+      { "name": "Shells", "type": "non-food", "category": "common" },
+      { "name": "Fish", "type": "food", "category": "common" },
+      { "name": "Driftwood", "type": "non-food", "category": "common" },
+      { "name": "Saltwater", "type": "non-food", "category": "common" }
+    ]
+  },
+  "Mountain": {
+    "description": "A rugged, towering range of cliffs with bitterly cold winds, offering rich ores but hiding dangerous wildlife like wolves and bears. Only the bravest dare climb these heights.",
+    "level_range": [11, 20],
+    "challenges": [
+      "Treacherous Steep Slopes that slow your movement",
+      "Sudden Avalanches triggered by shifting snow",
+      "Wild Animals that stalk the highlands",
+      "Low Oxygen due to the Thin Air at higher altitudes"
+    ],
+    "available_resources": [
+      { "name": "Iron Ore", "type": "non-food", "category": "common" },
+      { "name": "Coal", "type": "non-food", "category": "common" },
+      { "name": "Herbs", "type": "food", "category": "common" },
+      { "name": "Rock Crystals", "type": "non-food", "category": "rare" },
+      { "name": "Pine Sap", "type": "food", "category": "rare" },
+      { "name": "Snow", "type": "non-food", "category": "common" }
+    ]
+  },
+  "Caves": {
+    "description": "Dark and oppressive caverns filled with valuable treasures and rich minerals, but the dangers of cave-ins, venomous creatures, and treacherous darkness await the unwary.",
+    "level_range": [21, 30],
+    "challenges": [
+      "Bats that swarm and attack at night",
+      "Sudden Cave-In incidents causing injuries or trapping survivors",
+      "Complete Darkness, requiring light sources to navigate",
+      "Poisonous Pools that might cause harm if stepped into"
+    ],
+    "available_resources": [
+      { "name": "Gold Ore", "type": "non-food", "category": "common" },
+      { "name": "Silver Ore", "type": "non-food", "category": "common" },
+      { "name": "Glowstone", "type": "non-food", "category": "rare" },
+      { "name": "Fossils", "type": "non-food", "category": "rare" },
+      { "name": "Crystal Shards", "type": "non-food", "category": "rare" },
+      { "name": "Glowcap Mushrooms", "type": "food", "category": "rare" }
+    ]
+  },
+  "Dark Forest": {
+    "description": "A dense, ominous forest where shadows linger even at noon, full of magical plants and ferocious beasts that lurk beneath the canopy.",
+    "level_range": [31, 40],
+    "challenges": [
+      "Eerie Silence that makes you feel uneasy and watched",
+      "Poisonous Plants that can cause harm if touched",
+      "Ambush Predators that strike without warning",
+      "Shadow Beasts that hunt by night"
+    ],
+    "available_resources": [
+      { "name": "Mystic Herbs", "type": "food", "category": "rare" },
+      { "name": "Dark Wood", "type": "non-food", "category": "common" },
+      { "name": "Spider Silk", "type": "non-food", "category": "common" },
+      { "name": "Enchanted Vines", "type": "non-food", "category": "rare" },
+      { "name": "Nightshade", "type": "food", "category": "common" },
+      { "name": "Spirit Stones", "type": "non-food", "category": "rare" }
+    ]
+  },
+  "Desert": {
+    "description": "A vast, barren desert with scorching heat, endless sand dunes, and hidden dangers. Only the most prepared adventurers can survive the extreme conditions and uncover the rare treasures it holds.",
+    "level_range": [41, 50],
+    "challenges": [
+      "Extreme Heat that dehydrates and exhausts",
+      "Sandstorms that obscure visibility and slow progress",
+      "Treacherous Quicksand that can trap and swallow whole",
+      "Poisonous Creatures that hunt beneath the sand"
+    ],
+    "available_resources": [
+      { "name": "Sand", "type": "non-food", "category": "common" },
+      { "name": "Cactus Flesh", "type": "food", "category": "rare" },
+      { "name": "Rare Minerals", "type": "non-food", "category": "common" },
+      { "name": "Ancient Relics", "type": "non-food", "category": "rare" },
+      { "name": "Sunstone", "type": "non-food", "category": "rare" },
+      { "name": "Golden Sand Grains", "type": "non-food", "category": "rare" }
+    ]
   }
-  
+}
