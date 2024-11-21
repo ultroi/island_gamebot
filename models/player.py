@@ -89,6 +89,7 @@ class Player:
     @classmethod
     def from_dict(cls, data: Dict, config_path: str = '/workspaces/island_gamebot/data/config.json') -> "Player":
         """Create a Player object from a dictionary."""
+        
         return cls(
             user_id=data["user_id"],
             name=data["name"],

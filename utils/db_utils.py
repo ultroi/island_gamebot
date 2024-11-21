@@ -10,18 +10,21 @@ mongo_client = MongoClient(MONGO_URI)
 db = mongo_client.get_database()
 players_collection = db.get_collection("players")
 
-async def save_player(player: Player) -> None:
+async def save_player(user_id: int, player_data: dict):
     try:
-        players_collection.update_one(
-            {'user_id': player.user_id},
-            {'$set': player.to_dict()},
-            upsert=True
-        )
+        # Ensure the player is not already in the database
+        existing_player = players_collection.find_one({"user_id": user_id})
+        if existing_player:
+            players_collection.update_one({"user_id": user_id}, {"$set": player_data})
+        else:
+            players_collection.insert_one({"user_id": user_id, **player_data})
+        print(f"Player data saved for user_id={user_id}")
     except Exception as e:
-        print(f"An error occurred while saving the player: {e}")
+        print(f"Error saving player data: {e}")
 
 async def load_player(user_id: int) -> Optional[Player]:
     try:
+        # Proceed to load the player data for non-bot users
         player_data = players_collection.find_one({'user_id': user_id})
         if player_data:
             return Player.from_dict(player_data)

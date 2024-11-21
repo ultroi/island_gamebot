@@ -6,7 +6,7 @@ from pyrogram.handlers import CallbackQueryHandler
 from pyrogram.enums import ParseMode
 from utils.db_utils import load_player, save_player
 from utils.decorators import maintenance_mode_only
-from utils.shared_utils import get_health_bar, get_stamina_bar, get_max_health
+from utils.shared_utils import get_health_bar, get_stamina_bar
 from handlers.inventory_handler import inventory_command_handler
 from utils.inventory_utils import get_inventory_capacity
 import json
@@ -25,7 +25,7 @@ with open('/workspaces/island_gamebot/data/config.json') as f:
 
 
 # Handle player death and restart the game
-async def handle_player_death(player, message):
+async def handle_player_death(client: Client, player, message):
     player.stamina = config["max_stamina"]["base"] + (player.level * config["max_stamina"]["per_level"])  # Restore stamina
     player.inventory.clear()  # Clear inventory
     await save_player(player)
@@ -53,7 +53,7 @@ async def explore(client: Client, message: Message):
 
     if not player.started_adventure:
         player.started_adventure = True
-        await save_player(player)
+        await save_player(client, player)
         logging.info(f"Player {player.name} has started a new adventure.")
 
     # Determine the current location based on the player's exploration progress
@@ -77,7 +77,7 @@ async def explore(client: Client, message: Message):
     # Check if player has enough capacity for new items
     if len(player.inventory) < inventory_capacity:
         # Proceed with item collection and exploration logic
-        event_message, resources_collected, xp_gained, item_message = handle_exploration_event(player, current_location)
+        event_message, _, xp_gained, item_message = handle_exploration_event(player, current_location)
     else:
         await message.reply("Your inventory is full. You need to make space before you can explore further.")
         return
@@ -97,7 +97,7 @@ async def explore(client: Client, message: Message):
 
     # Ensure health does not drop below 0
     if player.health <= 0:
-        await handle_player_death(player, message)
+        await handle_player_death(client, player, message)
         return
 
     # Add XP gained from exploration
@@ -110,7 +110,7 @@ async def explore(client: Client, message: Message):
         logging.info(f"Player {player.name} leveled up to level {player.level}")
 
     # Save player data after all updates
-    await save_player(player)
+    await save_player(client, player)
 
     try:
         # Reply with exploration message
@@ -198,16 +198,17 @@ def handle_exploration_event(player, current_location):
 
 
 # Check inventory function
-async def check_inventory(client: Client, query: CallbackQuery):
-    await query.answer()
+@Client.on_callback_query(filters.regex("check_inventory"))
+async def check_inventory(client: Client, callback_query: CallbackQuery):
+    await callback_query.answer()
 
     try:
-        if query.data == "show_inventory":
-            await inventory_command_handler(query)
+        if callback_query.data == "show_inventory":
+            await inventory_command_handler(client, callback_query.message)
 
     except Exception as e:
         logging.error(f"An error occurred in check_inventory: {e}")
-        await query.message.reply(
+        await callback_query.message.reply(
             "An error occurred while checking your inventory. Please try again later."
         )
 
