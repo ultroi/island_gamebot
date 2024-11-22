@@ -27,7 +27,7 @@ Island Survival Bot is a text-based adventure game built for Telegram. Embark on
 
 3. **Run the bot:**
     ```bash
-    python bot.py
+    python main.py
     ```
 
 ## 🎮 How to Play
