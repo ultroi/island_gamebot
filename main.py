@@ -2,7 +2,8 @@ import asyncio
 import logging
 import traceback
 from pyrogram import idle
-from client import app, setup_mongo  # Import client and MongoDB setup
+from pyrogram import client as app
+from client import setup_mongo 
 from handlers import start_handler, inventory_handler, dev_handler, adventure_handler, callback_handler
 from handlers.error_handler import global_exception_handler 
 
