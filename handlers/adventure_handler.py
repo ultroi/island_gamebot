@@ -1,33 +1,111 @@
 import random
 import logging
+import json
+import asyncio
+from pyrogram.handlers import MessageHandler
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
-from pyrogram.handlers import CallbackQueryHandler
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from pyrogram.enums import ParseMode
 from utils.db_utils import load_player, save_player
 from utils.decorators import maintenance_mode_only
 from utils.shared_utils import get_health_bar, get_stamina_bar
-from handlers.inventory_handler import inventory_command_handler
 from utils.inventory_utils import get_inventory_capacity
-import json
+from handlers.error_handler import error_handler_decorator
 
-# Load the events data from event.json
-with open('/workspaces/island_gamebot/data/events.json') as f:
-    events = json.load(f)
+# Configure logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-# Load the items data from items.json
-with open('/workspaces/island_gamebot/data/items.json') as f:
-    items_data = json.load(f)["items"]
+### --- Configuration Loader --- ###
+def load_json_file(filepath):
+    """Load JSON data from the specified file."""
+    with open(filepath, "r") as f:
+        return json.load(f)
 
-# Load the dev config for exploration
-with open('/workspaces/island_gamebot/data/config.json') as f:
-    config = json.load(f)
+# Load configuration and data files
+CONFIG_PATHS = {
+    "events": "/workspaces/island_gamebot/data/events.json",
+    "items": "/workspaces/island_gamebot/data/items.json",
+    "config": "/workspaces/island_gamebot/data/config.json",
+}
+
+config = {
+    key: load_json_file(path) for key, path in CONFIG_PATHS.items()
+}
+
+events = config["events"]
+items_data = config["items"]["items"]
+
+### --- Helper Functions --- ###
+@error_handler_decorator
+async def get_location_based_on_progress(progress, message):
+    """Determine the player's current location based on their exploration progress."""
+    if progress < 10:
+        return "Beach"
+    elif progress < 20:
+        return "Mountain"
+    elif progress < 30:
+        return "Caves"
+    elif progress < 40:
+        return "Dark Forest"
+    return "Desert"
 
 
-# Handle player death and restart the game
-async def handle_player_death(client: Client, player, message):
-    player.stamina = config["max_stamina"]["base"] + (player.level * config["max_stamina"]["per_level"])  # Restore stamina
-    player.inventory.clear()  # Clear inventory
+@error_handler_decorator
+async def filter_items_by_location(location, message):
+    """Filter items available in the specified location."""
+    return [item for item in items_data if item["location"].lower() == location.lower()]
+
+
+@error_handler_decorator
+async def calculate_exploration_rewards(player, current_location):
+    """Determine the rewards (items, XP, and encounter message) for an exploration."""
+    # Await the async version of filter_items_by_location
+    location_items = await filter_items_by_location(current_location, None)
+    if not location_items:
+        logger.warning(f"No items found in {current_location}.")
+        return "None", [], 0, ""
+
+    # Randomly collect items
+    num_items_to_collect = random.choices([1, 2, 3, 4], weights=[0.1, 0.2, 0.3, 0.4])[0]
+    collected_items = random.sample(location_items, k=min(num_items_to_collect, len(location_items)))
+
+    # Add items to the player's inventory and calculate XP gain
+    item_counts = {}
+    total_xp_gain = 0
+    for item in collected_items:
+        if len(player.inventory) < get_inventory_capacity(player, current_location, config["config"], items_data):
+            player.inventory.append(item)
+            item_counts[item["name"]] = item_counts.get(item["name"], 0) + 1
+            total_xp_gain += config["config"]["xp_gain"]["per_item"]
+
+    # XP scaling based on player's level
+    total_xp_gain *= config["config"]["xp_gain"]["level_multiplier"]
+
+    # Build item message and encounter message
+    item_message = "\n".join(f"{name} (x{count})" for name, count in item_counts.items()) or "None"
+    encounter_message = random.choice(events[current_location]) if current_location in events else ""
+
+    return item_message, collected_items, total_xp_gain, encounter_message
+
+@error_handler_decorator
+async def update_player_stats(player, stamina_deduction):
+    """Update the player's stamina and health after exploration."""
+    player.stats["stamina"] = max(0, player.stats["stamina"] - stamina_deduction)
+    if player.stats["stamina"] == 0:
+        health_deduction = random.randint(5, 12)
+        player.stats["health"] = max(0, player.stats["health"] - health_deduction)
+    return player
+
+@error_handler_decorator
+async def handle_player_death(player, message):
+    """Handle the player's death by resetting stats and clearing inventory."""
+    player.stamina = config["config"]["max_stamina"]["base"] + (player.level * config["config"]["max_stamina"]["per_level"])
+    player.inventory.clear()
     await save_player(player)
     await message.reply(
         f"{player.name} has died.\n"
@@ -35,169 +113,115 @@ async def handle_player_death(client: Client, player, message):
         "Explore carefully next time!"
     )
 
-@Client.on_message(filters.command("explore") & filters.private)
-@maintenance_mode_only
-async def explore(client: Client, message: Message):
-    if message.from_user.is_bot:
-        bot_username = (await client.get_me()).username
-        logging.info(f"Bot {bot_username} is triggering the explore function. Skipping.")
-        return
+def build_exploration_response(player, current_location, item_message, xp_gained):
+    """Construct the response message for the exploration result."""
+    health_bar = get_health_bar(player.stats["health"], player.stats["max_health"])
+    stamina_bar = get_stamina_bar(player.stats["stamina"], player.stats["max_stamina"])
+    return (
+        f"<b>•HP•</b>\n<b>| {health_bar} |</b>\n"
+        f"              <b>(|{player.stats['health']}/{player.stats['max_health']}|)</b>\n"
+        f"<b>•Stamina•</b>\n<b>| {stamina_bar} |</b>\n"
+        f"                   <b>(|{player.stats['stamina']}/{player.stats['max_stamina']}|)</b>\n\n"
+        f"<b>You explored the {current_location}</b>\n"
+        f"<b>Items found:</b>\n{item_message}\n\n"
+        f"<b>Total XP gained: {xp_gained} ✨</b>\n"
+    )
 
-    logging.info(f"Exploration command received from user {message.from_user.id} - {message.from_user.first_name}")
+### --- Command Handlers --- ###
+@maintenance_mode_only
+@error_handler_decorator
+async def explore(client: Client, message: Message):
     user_id = message.from_user.id
     player = await load_player(user_id)
 
-    if player is None:
+    if not player:
         await message.reply("Player data could not be loaded. Please try again later.")
         return
 
     if not player.started_adventure:
         player.started_adventure = True
-        await save_player(client, player)
-        logging.info(f"Player {player.name} has started a new adventure.")
+        await save_player(player.user_id, player)
 
-    # Determine the current location based on the player's exploration progress
-    current_location = get_location_based_on_progress(player)
+    current_location = await get_location_based_on_progress(player.exploration_progress, message)
+    inventory_capacity = get_inventory_capacity(player, current_location, config["config"], items_data)
 
-    # Calculate max health and stamina based on the current level
-    player.max_health = config["max_health"]["base"] + (player.level * config["max_health"]["per_level"])
-    player.max_stamina = config["max_stamina"]["base"] + (player.level * config["max_stamina"]["per_level"])
-
-    # Get inventory capacity based on the current location
-    inventory_capacity = get_inventory_capacity(player, current_location, config, items_data)
-    # Check if player has enough capacity for new items
-    if len(player.inventory) < inventory_capacity:
-        event_message, _, xp_gained, item_message = handle_exploration_event(player, current_location)
-    else:
+    if len(player.inventory) >= inventory_capacity:
         await message.reply("Your inventory is full. You need to make space before you can explore further.")
         return
 
-    # Deduct stamina based on config
-    stamina_deduction = random.randint(config["stamina_usage"]["min"], config["stamina_usage"]["max"])
-    player.stamina -= stamina_deduction
+    item_message, _, xp_gained, _ = await calculate_exploration_rewards(player, current_location)
+    stamina_deduction = random.randint(config["config"]["stamina_usage"]["min"], config["config"]["stamina_usage"]["max"])
+    player = await update_player_stats(player, stamina_deduction)
 
-    # Ensure stamina does not go below 0
-    if player.stamina < 0:
-        player.stamina = 0
-
-    # Handle health deduction if stamina is at 0
-    if player.stamina == 0:
-        health_deduction = random.randint(5, 12)
-        player.health -= health_deduction
-
-    # Ensure health does not drop below 0
-    if player.health <= 0:
-        await handle_player_death(client, player, message)
+    if player.stats['health'] <= 0:
+        await handle_player_death(player, message)
         return
 
-    # Add XP gained from exploration
     player.experience += xp_gained
-
-    # Level-up logic
-    if player.experience >= player.level * config["level_requirements"]["xp_per_level"]:
+    level_up_xp = player.level * config["config"]["level_requirements"]["xp_per_level"]
+    if player.experience >= level_up_xp:
         player.level += 1
         player.experience = 0
-        logging.info(f"Player {player.name} leveled up to level {player.level}")
 
-    # Save player data after all updates
-    await save_player(client, player)
+    await save_player(player.user_id, player)
 
-    try:
-        # Reply with exploration message
-        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Show Inventory", callback_data="show_inventory")]])
+    response_message = build_exploration_response(player, current_location, item_message, xp_gained)
+    if not response_message.strip():
+        logger.error("Response message is empty!")
+        await message.reply("An error occurred while generating the response. Please try again later.")
+        return
 
-        health_bar = get_health_bar(player.health, player.max_health)
-        stamina_bar = get_stamina_bar(player.stamina, player.max_stamina)
-
-        response_message = f"<b>•HP•</b>\n" \
-                           f"<b>| {health_bar} |</b>\n" \
-                           f"              <b>(|{player.health}/{player.max_health}|)</b>\n" \
-                           f"<b>•Stamina•</b>\n" \
-                           f"<b>| {stamina_bar} |</b>\n" \
-                           f"                   <b>(|{player.stamina}/{player.max_stamina}|)</b>\n\n" \
-                           f"<b>You explored the {current_location}</b>\n" \
-                           f"<b>Items found:</b>\n" \
-                           f"{item_message}\n\n" \
-                           f"<b>Total XP gained: {xp_gained} ✨</b>\n\n" \
-                           f"{event_message}"
-
-        await message.reply(response_message, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
-
-    except Exception as e:
-        logging.error(f"An error occurred during exploration: {e}")
-        await message.reply("An error occurred. Please try again later.")
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Show Inventory", callback_data="show_inventory")]])
+    await message.reply(response_message, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
 
 
-# Get the location based on the player's exploration progress
-def get_location_based_on_progress(player):
-    if player.exploration_progress < 10:
-        return "Beach"
-    elif player.exploration_progress < 20:
-        return "Mountain"
-    elif player.exploration_progress < 30:
-        return "Caves"
-    elif player.exploration_progress < 40:
-        return "Dark Forest"
-    else:
-        return "Desert"
+@maintenance_mode_only
+@error_handler_decorator
+async def rest(client: Client, message: Message):
+    user_id = message.from_user.id
+    player = await load_player(user_id)
+
+    if not player:
+        await message.reply("Player data could not be loaded. Please try again later.")
+        return
+
+    # Send an initial loading message
+    loading_message = await message.reply("Resting... [▒▒▒▒▒▒▒▒▒▒] 0%")
+
+    # Define progress steps for the animation
+    progress_steps = [
+        "[█▒▒▒▒▒▒▒▒▒] 10%",
+        "[██▒▒▒▒▒▒▒▒] 20%",
+        "[███▒▒▒▒▒▒▒] 30%",
+        "[████▒▒▒▒▒▒] 40%",
+        "[█████▒▒▒▒▒] 50%",
+        "[██████▒▒▒▒] 60%",
+        "[███████▒▒▒] 70%",
+        "[████████▒▒] 80%",
+        "[█████████▒] 90%",
+        "[██████████] 100%"
+    ]
+
+    # Simulate the progress animation
+    for step in progress_steps:
+        await asyncio.sleep(0.5)  # Adjust speed as necessary
+        await loading_message.edit_text(f"Resting... {step}")
+
+    # Final message
+    await loading_message.edit_text("Fully rested! 🌟")
+
+    # Restore player's stamina
+    player.stats["stamina"] = player.stats["max_stamina"]
+    await save_player(player.user_id, player)
+
+    # Send a message indicating that the player's stamina has been restored
+    await loading_message.edit_text(
+        f"{player.name} has fully rested.\n"
+        "✨ Your stamina has been restored to maximum!"
+    )
 
 
-# Handle exploration event
-def handle_exploration_event(player, current_location):
-    resources_collected = []
-    encounter_message = ""
-    total_xp_gain = 0
-    item_message = ""
-
-    # Filter items based on the current location
-    location_items = [item for item in items_data if item["location"].lower() == current_location.lower()]
-
-    # Check if there are any items in the location
-    if not location_items:
-        logging.warning(f"No items found in {current_location}.")
-        item_message = "None"
-    else:
-        # Pick a random number of items (between 1 to 4 items, with a higher chance of picking 4)
-        num_items_to_collect = random.choices([1, 2, 3, 4], weights=[0.1, 0.2, 0.3, 0.4])[0]
-
-        # Collect random items from the available location items
-        collected_items = random.sample(location_items, k=min(num_items_to_collect, len(location_items)))
-
-        if not collected_items:
-            logging.warning(f"No items collected in {current_location}.")
-            item_message = "None"
-        else:
-            resources_collected = collected_items  # Final collected items
-            item_message = "\n".join(f"{item['name']}" for item in resources_collected)
-
-    # Choose a random event message if available
-    if current_location in events:
-        encounter_message = random.choice(events[current_location])
-
-    # Add items to inventory and calculate XP
-    item_counts = {}
-    for resource in resources_collected:
-        item_name = resource["name"]
-        if len(player.inventory) < get_inventory_capacity(player, current_location, config, items_data):  # Check if there is space in inventory
-            player.inventory.append(resource)  # Add item to inventory
-            item_counts[item_name] = item_counts.get(item_name, 0) + 1
-
-            # Calculate XP based on type
-            xp_per_item = config["xp_gain"]["per_item"]
-            total_xp_gain += xp_per_item  # Add XP for the item
-
-    # Apply level multiplier
-    total_xp_gain *= config["xp_gain"]["level_multiplier"]
-
-    # Create item message
-    item_message_parts = []
-    for item_name, count in item_counts.items():
-        item_message_parts.append(f"{item_name} (x{count})")
-    item_message = "\n".join(item_message_parts) if item_message_parts else "None"
-
-    return encounter_message, resources_collected, total_xp_gain, item_message
-
-
-# Register function for explore command in main.py
+### --- Registration --- ###
 def register(app: Client):
-    app.on_message(filters.command("explore") & maintenance_mode_only)(explore)
+    app.add_handler(MessageHandler(explore, filters.command("explore")))
+    app.add_handler(MessageHandler(rest, filters.command("rest")))

@@ -17,7 +17,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://default_user:default_password@
 API_ID = os.getenv("API_ID", "6526942")
 API_HASH = os.getenv("API_HASH", "3e0e31273667bfe888b1d140024aabdb")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "7882763921:AAFgi6VZWbCNDK8A2XA5YodN-ljAKMeOHAI")
-OWNER_ID = os.getenv("OWNER_ID", "5956598856")
+OWNER_ID = os.getenv("OWNER_ID", "-1002201661092")
 
 # MongoDB Connection
 def validate_mongo_uri():

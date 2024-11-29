@@ -14,12 +14,19 @@ mongo_client = MongoClient(MONGO_URI)
 db = mongo_client.get_database()
 players_collection = db.get_collection("players")
 
-async def save_player(user_id: int, player_data: dict):
+async def save_player(user_id: int, player_data: Player):
     try:
+        # Ensure player_data is a Player object before accessing the to_dict method
+        if not isinstance(player_data, Player):
+            raise TypeError(f"Expected Player object, got {type(player_data)}")
+
+        # Convert Player object to dictionary
+        player_data_dict = player_data.to_dict()
+        
         # Using upsert to insert or update the player data in one operation
         result = players_collection.update_one(
             {"user_id": user_id},
-            {"$set": player_data},
+            {"$set": player_data_dict},
             upsert=True
         )
         if result.upserted_id:
@@ -31,14 +38,14 @@ async def save_player(user_id: int, player_data: dict):
 
 async def load_player(user_id: int) -> Optional[Player]:
     try:
-        # Proceed to load the player data for non-bot users
         player_data = players_collection.find_one({'user_id': user_id})
         if player_data:
-            return Player.from_dict(player_data)
+            return Player.from_dict(player_data)  # Ensure this returns a Player object
         return None
     except Exception as e:
         logger.error(f"An error occurred while loading the player {user_id}: {e}")
         return None
+
 
 async def get_all_players():
     try:

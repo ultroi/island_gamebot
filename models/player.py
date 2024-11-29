@@ -6,6 +6,8 @@ class Player:
     _default_config = {
         "base_health": 100,
         "base_stamina": 50,
+        "health_per_level": 10,
+        "stamina_per_level": 5,
         "xp_multiplier": 1.5,
     }
 
@@ -58,16 +60,35 @@ class Player:
         """Initialize player stats dynamically based on level and configuration."""
         base_health = self.config.get("base_health", 100)
         base_stamina = self.config.get("base_stamina", 50)
+        health_per_level = self.config.get("health_per_level", 10)
+        stamina_per_level = self.config.get("stamina_per_level", 5)
+
         return {
-            "health": base_health + (self.level * 10),
-            "max_health": base_health + (self.level * 10),
-            "stamina": base_stamina + (self.level * 5),
-            "max_stamina": base_stamina + (self.level * 5),
+            "health": base_health + (self.level * health_per_level),
+            "max_health": base_health + (self.level * health_per_level),
+            "stamina": base_stamina + (self.level * stamina_per_level),
+            "max_stamina": base_stamina + (self.level * stamina_per_level),
         }
 
-    def update_stat(self, stat_name: str, value: int):
-        """Update or add a player stat dynamically."""
-        self.stats[stat_name] = value
+    @property
+    def health(self):
+        return self.stats["health"]
+
+    @health.setter
+    def health(self, value: int):
+        self.stats["health"] = self._clamp(value, 0, self.stats["max_health"])
+
+    @property
+    def stamina(self):
+        return self.stats["stamina"]
+
+    @stamina.setter
+    def stamina(self, value: int):
+        self.stats["stamina"] = self._clamp(value, 0, self.stats["max_stamina"])
+
+    def _clamp(self, value: int, min_value: int, max_value: int) -> int:
+        """Clamp a value between a minimum and maximum."""
+        return max(min_value, min(value, max_value))
 
     def gain_experience(self, amount: int):
         """Add experience to the player and handle leveling up."""
@@ -85,24 +106,31 @@ class Player:
     def level_up(self):
         """Increase the player's level and update stats."""
         self.level += 1
-        self.stats["max_health"] += 10
-        self.stats["max_stamina"] += 5
-        self.stats["health"] = self.stats["max_health"]
-        self.stats["stamina"] = self.stats["max_stamina"]
+        self.stats["max_health"] += self.config.get("health_per_level", 10)
+        self.stats["max_stamina"] += self.config.get("stamina_per_level", 5)
+        self.health = self.stats["max_health"]
+        self.stamina = self.stats["max_stamina"]
         print(f"{self.name} leveled up to level {self.level}!")
 
     def take_damage(self, amount: int):
         """Reduce health by the damage amount."""
-        self.stats["health"] -= amount
-        if self.stats["health"] <= 0:
-            self.stats["health"] = 0
+        self.health -= amount
+        if self.health <= 0:
             print(f"{self.name} has been defeated!")
+
+    def restore_stamina(self, amount: int):
+        """Restore stamina up to the maximum limit."""
+        self.stamina += amount
+
+    def reduce_stamina(self, amount: int):
+        """Reduce stamina and handle exhaustion."""
+        self.stamina -= amount
+        if self.stamina == 0:
+            print(f"{self.name} is exhausted!")
 
     def heal(self, amount: int):
         """Heal the player by a specific amount."""
-        self.stats["health"] += amount
-        if self.stats["health"] > self.stats["max_health"]:
-            self.stats["health"] = self.stats["max_health"]
+        self.health += amount
 
     def to_dict(self) -> Dict:
         """Convert the Player object to a dictionary."""
