@@ -1,65 +1,58 @@
 {
     "max_health": {
-        "base": 50,
-        "per_level": 5
+        "base": 60,
+        "per_level": 10
     },
     "max_stamina": {
-        "base": 50,
-        "per_level": 2
+        "base": 45,
+        "per_level": 4
     },
     "stamina_usage": {
-        "min": 1,
-        "max": 5
+        "min": 2,
+        "max": 8
     },
     "xp_gain": {
-        "per_item": 1,
-        "per_encounter": 2,
-        "level_multiplier": 2,
+        "per_item": 2,
+        "per_encounter": 6,
+        "level_multiplier": 3,
         "value": 0
     },
     "level_requirements": {
-        "xp_per_level": 100,
-        "xp_increment_per_level": 10,
-        "level_cap": 50
+        "xp_per_level": 200,
+        "xp_increment_per_level": 60,
+        "level_cap": 12
     },
     "space_per_item": {
-        "common": 1,
-        "rare": 2,
-        "legendary": 3
+        "common": 5,
+        "rare": 8
     },
-    "item_types": {
-        "healing": {
-            "min_health_restore": 10,
-            "max_health_restore": 30
+    "biome_effects": {
+        "beach": {
+            "stamina_bonus": 0,
+            "health_recovery_bonus": 5
         },
-        "mana": {
-            "min_mana_restore": 5,
-            "max_mana_restore": 15
+        "mountain": {
+            "stamina_bonus": 6,
+            "health_recovery_bonus": 8
+        },
+        "caves": {
+            "stamina_penalty": -7,
+            "health_recovery_penalty": -8
+        },
+        "desert": {
+            "stamina_penalty": -12,
+            "health_recovery_penalty": -12,
+            "food_and_water_requirement": 2
         }
     },
-    "encounter_difficulty": {
-        "easy": {
-            "xp_reward": 5,
-            "stamina_cost": 3
+    "endurance_effects": {
+        "low_stamina_penalty": {
+            "movement_speed": -25,
+            "action_delay": 3
         },
-        "medium": {
-            "xp_reward": 10,
-            "stamina_cost": 5
-        },
-        "hard": {
-            "xp_reward": 20,
-            "stamina_cost": 10
-        }
-    },
-    "gameplay_settings": {
-        "max_players": 10,
-        "difficulty": "normal",
-        "daily_rewards": {
-            "xp": 50,
-            "items": [
-                "common",
-                "rare"
-            ]
+        "low_health_penalty": {
+            "vision_blur": true,
+            "recovery_rate": -60
         }
     }
 }

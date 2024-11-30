@@ -4,11 +4,34 @@ import os
 
 class Player:
     _default_config = {
-        "base_health": 100,
+        "base_health": 60,
         "base_stamina": 50,
         "health_per_level": 10,
-        "stamina_per_level": 5,
+        "stamina_per_level": 3,
         "xp_multiplier": 1.5,
+        "xp_per_item": 2,
+        "xp_per_encounter": 5,
+        "level_cap": 10,
+        "biome_effects": {
+            "beach": 0,
+            "mountain": 5,
+            "caves": -5,
+            "desert": -10,
+        },
+        "endurance_effects": {
+            "low_stamina_penalty": {
+                "movement_speed": -20,
+                "action_delay": 2,
+            },
+            "low_health_penalty": {
+                "vision_blur": True,
+                "recovery_rate": -50,
+            }
+        },
+        "space_per_item": {
+            "common": 5,
+            "rare": 8
+        }
     }
 
     def __init__(
@@ -17,9 +40,9 @@ class Player:
         name: str,
         level: int = 1,
         experience: int = 0,
+        location: str = "Beach",
         stats: Optional[Dict[str, int]] = None,
         inventory: Optional[List[Dict]] = None,
-        location: str = "Starting Point",
         exploration_progress: int = 0,
         started_adventure: bool = False,
         arc_type: Optional[str] = None,
@@ -58,10 +81,10 @@ class Player:
 
     def _initialize_stats(self) -> Dict[str, int]:
         """Initialize player stats dynamically based on level and configuration."""
-        base_health = self.config.get("base_health", 100)
+        base_health = self.config.get("base_health", 60)
         base_stamina = self.config.get("base_stamina", 50)
         health_per_level = self.config.get("health_per_level", 10)
-        stamina_per_level = self.config.get("stamina_per_level", 5)
+        stamina_per_level = self.config.get("stamina_per_level", 3)
 
         return {
             "health": base_health + (self.level * health_per_level),
@@ -89,6 +112,13 @@ class Player:
     def _clamp(self, value: int, min_value: int, max_value: int) -> int:
         """Clamp a value between a minimum and maximum."""
         return max(min_value, min(value, max_value))
+    
+    def change_location(self, new_location: str):
+        """Change the player's location and apply the new biome effects."""
+        if new_location != self.location:
+            print(f"{self.name} is moving to {new_location}.")
+            self.location = new_location
+            self.apply_biome_effect()
 
     def gain_experience(self, amount: int):
         """Add experience to the player and handle leveling up."""
@@ -97,20 +127,29 @@ class Player:
         while self.experience >= max_xp:
             self.experience -= max_xp
             self.level_up()
+            max_xp = self.get_max_experience()  # Recalculate max XP for the new level
 
     def get_max_experience(self) -> int:
         """Calculate the maximum experience for the current level."""
-        multiplier = self.config.get("xp_multiplier", 1.5)
-        return int(100 * (self.level ** multiplier))
+        # Increase XP requirement per level more steeply to make leveling harder
+        multiplier = self.config.get("xp_multiplier", 2.0)  # Hardcore survival: steeper multiplier
+        base_xp = 100  # Base XP for level 1
+        return int(base_xp * (self.level ** multiplier))  # Exponentially increasing XP requirement
 
     def level_up(self):
         """Increase the player's level and update stats."""
+        if self.level >= self.config.get("level_cap", 20):  # Increased level cap for hardcore survival
+            print(f"{self.name} has reached the level cap!")
+            return
+
         self.level += 1
-        self.stats["max_health"] += self.config.get("health_per_level", 10)
-        self.stats["max_stamina"] += self.config.get("stamina_per_level", 5)
+        # Increase stats more aggressively per level
+        self.stats["max_health"] += self.config.get("health_per_level")  # More health per level
+        self.stats["max_stamina"] += self.config.get("stamina_per_level")  # More stamina per level
         self.health = self.stats["max_health"]
         self.stamina = self.stats["max_stamina"]
         print(f"{self.name} leveled up to level {self.level}!")
+
 
     def take_damage(self, amount: int):
         """Reduce health by the damage amount."""
@@ -132,6 +171,26 @@ class Player:
         """Heal the player by a specific amount."""
         self.health += amount
 
+    def apply_biome_effect(self):
+        """Apply biome effects to the player based on their location."""
+        biome = self.location.lower()
+        biome_effect = self.config["biome_effects"].get(biome, 0)
+        self.stats["max_stamina"] += biome_effect
+        self.stamina = self.stats["max_stamina"]
+        print(f"Biome effect applied: {biome}.")
+
+    def apply_endurance_penalties(self):
+        """Apply penalties based on stamina and health levels."""
+        if self.stamina < self.stats["max_stamina"] * 0.2:
+            penalty = self.config["endurance_effects"]["low_stamina_penalty"]
+            print(f"Stamina low! Movement speed reduced by {penalty['movement_speed']}% and action delay increased by {penalty['action_delay']}s.")
+        
+        if self.health < self.stats["max_health"] * 0.2:
+            penalty = self.config["endurance_effects"]["low_health_penalty"]
+            if penalty["vision_blur"]:
+                print("Health low! Vision is blurred.")
+            self.stats["recovery_rate"] = penalty["recovery_rate"]
+    
     def to_dict(self) -> Dict:
         """Convert the Player object to a dictionary."""
         return {
@@ -165,7 +224,7 @@ class Player:
             experience=data.get("experience", 0),
             stats=data.get("stats", {}),
             inventory=data.get("inventory", []),
-            location=data.get("location", "Starting Point"),
+            location=data.get("location"),
             exploration_progress=data.get("exploration_progress", 0),
             started_adventure=data.get("started_adventure", False),
             arc_type=data.get("arc_type"),

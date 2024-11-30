@@ -6,7 +6,7 @@ from handlers.start_handler import show_game_brief, start_solo_arc, show_narrati
 from handlers.adventure_handler import explore
 from utils.db_utils import load_player, save_player
 from utils.shared_utils import get_health_bar, get_stamina_bar
-from utils.inventory_utils import get_inventory_capacity
+from handlers.inventory_handler import get_inventory_capacity
 from handlers.error_handler import error_handler_decorator
 import logging
 import json

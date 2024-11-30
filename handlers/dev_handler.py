@@ -233,7 +233,7 @@ async def set_level_requirements(client: Client, message: Message):
             config['level_requirements']['level_cap'] = level_cap
 
         save_json(CONFIG_FILE, config)
-        await message.reply(f"<b>✅UPDATED</b>\n Level Requirements set: XP per Level = {xp_per_level if xp_per_level else config['level_requirements']['xp_per_level']}, XP Increment per Level = {xp_increment_per_level if xp_increment_per_level else config['level_requirements']['xp_increment_per_level']}, Level Cap = {level_cap if level_cap else config['level_requirements']['level_cap']}.", parse_mode=ParseMode.HTML)
+        await message.reply(f"<b>✅UPDATED Level Requirements set</b>\n <b>XP per Level = {xp_per_level if xp_per_level else config['level_requirements']['xp_per_level']},\n XP Increment per Level = {xp_increment_per_level if xp_increment_per_level else config['level_requirements']['xp_increment_per_level']},\n Level Cap = {level_cap if level_cap else config['level_requirements']['level_cap']}.</b>", parse_mode=ParseMode.HTML)
         logging.info(f"Level Requirements updated by {message.from_user.id} at {datetime.now()}.")
     except Exception as e:
         await message.reply_text("❌ An error occurred while setting level requirements.", parse_mode=ParseMode.HTML)
@@ -244,26 +244,23 @@ async def set_level_requirements(client: Client, message: Message):
 @dev_only
 async def set_space_per_item(client: Client, message: Message):
     args = message.text.split()
-    if not is_valid_numeric_input(args, 4):
-        await message.reply_text("❌ Invalid Syntax: /set_space_per_item <common> <rare> <legendary>", parse_mode=ParseMode.HTML)
+    if not is_valid_numeric_input(args, 3):
+        await message.reply_text("❌ Invalid Syntax: /set_space_per_item <common> <rare>", parse_mode=ParseMode.HTML)
         logging.error(f"Invalid command usage by {message.from_user.id} at {datetime.now()}: {message.text}")
         return
 
     try:
         common = int(args[1]) if args[1] != '-' else None
         rare = int(args[2]) if args[2] != '-' else None
-        legendary = int(args[3]) if args[3] != '-' else None
         
         config = load_json(CONFIG_FILE)
         if common is not None:
             config['space_per_item']['common'] = common
         if rare is not None:
             config['space_per_item']['rare'] = rare
-        if legendary is not None:
-            config['space_per_item']['legendary'] = legendary
 
         save_json(CONFIG_FILE, config)
-        await message.reply(f"<b>✅UPDATED</b>\n Space per Item set: Common = {common if common else config['space_per_item']['common']}, Rare = {rare if rare else config['space_per_item']['rare']}, Legendary = {legendary if legendary else config['space_per_item']['legendary']}.", parse_mode=ParseMode.HTML)
+        await message.reply(f"<b>✅UPDATED</b>\n Space per Item set: Common = {common if common else config['space_per_item']['common']}, Rare = {rare if rare else config['space_per_item']['rare']}.", parse_mode=ParseMode.HTML)
         logging.info(f"Space per Item updated by {message.from_user.id} at {datetime.now()}.")
     except Exception as e:
         await message.reply_text("❌ An error occurred while setting space per item.", parse_mode=ParseMode.HTML)
@@ -286,7 +283,7 @@ async def show_config(client: Client, message: Message):
     ])
     
     # Send the first part of the configuration preview
-    await message.reply(
+    await message.reply_text(
         f"Current configurations:\n<pre>{config_chunks[0]}</pre>",
         parse_mode=ParseMode.HTML,
         reply_markup=keyboard
@@ -356,7 +353,7 @@ async def command_details(client: Client, callback_query: CallbackQuery):
         "<b>What it does:</b> Sets the maximum health for the player.\n"
         "<b>Usage:</b> <code>/set_max_health &lt;base&gt; &lt;per_level&gt;</code>\n"
         "<b>Example:</b> <code>/set_max_health 50 2</code>\n\n"
-        " This will set base health to 50, increasing by 2 each level.\n"
+        "- This will set base health to 50, increasing by 2 each level.\n"
         "- <i>Tip:</i> Use this command to balance early game difficulty or make leveling smoother.\n\n"
     ),
     "2": (
@@ -438,7 +435,7 @@ async def log_callback_data(client: Client, callback_query: CallbackQuery):
 # Register the handlers
 def register(app: Client):
     app.add_handler(MessageHandler(dev, filters.command("dev")))
-    app.add_handler(MessageHandler(delete_player_data, filters.command("delete_player")))
+    app.add_handler(MessageHandler(delete_player_data, filters.command("delplayer")))
     app.add_handler(MessageHandler(set_max_health, filters.command("set_max_health")))
     app.add_handler(MessageHandler(set_max_stamina, filters.command("set_max_stamina")))
     app.add_handler(MessageHandler(set_stamina_usage, filters.command("set_stamina_usage")))

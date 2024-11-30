@@ -9,7 +9,7 @@ from pyrogram.enums import ParseMode
 from utils.db_utils import load_player, save_player
 from utils.decorators import maintenance_mode_only
 from utils.shared_utils import get_health_bar, get_stamina_bar
-from utils.inventory_utils import get_inventory_capacity
+from handlers.inventory_handler import get_inventory_capacity
 from handlers.error_handler import error_handler_decorator
 
 # Configure logger
@@ -63,34 +63,58 @@ async def filter_items_by_location(location, message):
 
 @error_handler_decorator
 async def calculate_exploration_rewards(player, current_location):
-    """Determine the rewards (items, XP, and encounter message) for an exploration."""
-    # Await the async version of filter_items_by_location
+    """Determine the rewards (items, XP, encounter message, and effects) for an exploration, including biome effects and endurance penalties."""
+    
+    # Apply biome effects based on the player's location
+    player.apply_biome_effect()
+    
+    # Apply endurance penalties based on player's stamina and health
+    player.apply_endurance_penalties()
+
+    # Get items based on current location
     location_items = await filter_items_by_location(current_location, None)
     if not location_items:
         logger.warning(f"No items found in {current_location}.")
         return "None", [], 0, ""
 
-    # Randomly collect items
+    # Randomly collect items based on configured probabilities
     num_items_to_collect = random.choices([1, 2, 3, 4], weights=[0.1, 0.2, 0.3, 0.4])[0]
     collected_items = random.sample(location_items, k=min(num_items_to_collect, len(location_items)))
 
-    # Add items to the player's inventory and calculate XP gain
+    # Add items to inventory and calculate XP gain
     item_counts = {}
     total_xp_gain = 0
     for item in collected_items:
         if len(player.inventory) < get_inventory_capacity(player, current_location, config["config"], items_data):
             player.inventory.append(item)
             item_counts[item["name"]] = item_counts.get(item["name"], 0) + 1
-            total_xp_gain += config["config"]["xp_gain"]["per_item"]
+            # Reduced XP gain to make progression harder
+            total_xp_gain += config["config"]["xp_gain"]["per_item"] * 0.75  # Less XP for hardcore
 
-    # XP scaling based on player's level
-    total_xp_gain *= config["config"]["xp_gain"]["level_multiplier"]
+    # Apply XP scaling based on player's level with the new hardcore multiplier
+    total_xp_gain *= config["config"]["xp_gain"]["level_multiplier"] * 0.5  # Harder scaling
 
-    # Build item message and encounter message
+    # Build item message
     item_message = "\n".join(f"{name} (x{count})" for name, count in item_counts.items()) or "None"
+
+    # Generate encounter message based on the current location and random events
     encounter_message = random.choice(events[current_location]) if current_location in events else ""
 
-    return item_message, collected_items, total_xp_gain, encounter_message
+    # Include any additional effects (like environmental effects or random events)
+    special_effect_message = ""
+    if current_location == "Dark Forest":
+        special_effect_message = "🌲 The forest feels eerie... something might be watching you..."
+    elif current_location == "Mountain":
+        special_effect_message = "⛰️ The air is thin, making it harder to breathe... but you're brave!"
+    elif random.random() < 0.1:  # 10% chance for a random event effect
+        special_effect_message = "⚡ A sudden storm rolls in! You feel the wind howl and the rain pour down!"
+
+    # Combine encounter and special effect messages
+    full_encounter_message = f"{encounter_message}\n{special_effect_message}".strip()
+
+    return item_message, collected_items, total_xp_gain, full_encounter_message
+
+
 
 @error_handler_decorator
 async def update_player_stats(player, stamina_deduction):
@@ -149,7 +173,8 @@ async def explore(client: Client, message: Message):
         await message.reply("Your inventory is full. You need to make space before you can explore further.")
         return
 
-    item_message, _, xp_gained, _ = await calculate_exploration_rewards(player, current_location)
+    item_message, _, xp_gained, encounter_message = await calculate_exploration_rewards(player, current_location)
+    
     stamina_deduction = random.randint(config["config"]["stamina_usage"]["min"], config["config"]["stamina_usage"]["max"])
     player = await update_player_stats(player, stamina_deduction)
 
@@ -165,7 +190,7 @@ async def explore(client: Client, message: Message):
 
     await save_player(player.user_id, player)
 
-    response_message = build_exploration_response(player, current_location, item_message, xp_gained)
+    response_message = build_exploration_response(player, current_location, item_message, xp_gained, encounter_message)
     if not response_message.strip():
         logger.error("Response message is empty!")
         await message.reply("An error occurred while generating the response. Please try again later.")
