@@ -1,0 +1,15 @@
+{
+  "builds": [
+    {
+      "src": "main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "env": {
+    "MONGO_URI": "@mongo_uri",
+    "API_ID": "@api_id",
+    "API_HASH": "@api_hash",
+    "BOT_TOKEN": "@bot_token",
+    "OWNER_ID": "@owner_id"
+  }
+}
