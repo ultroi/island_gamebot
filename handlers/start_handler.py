@@ -1,13 +1,12 @@
+import asyncio
 from pyrogram import Client, filters
-from pyrogram.handlers import MessageHandler
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 from pyrogram.enums import ParseMode
 from models.player import Player
 from handlers.error_handler import error_handler_decorator
-from utils.db_utils import load_player, save_player, delete_player_progress
-from handlers.adventure_handler import explore
-from utils.decorators import maintenance_mode_only
-import logging
+from utils.db_utils import load_player, save_player
+from handlers.adventure_handler import explore  # Import the explore command
 
 # Constants for messages
 START_MESSAGE = (
@@ -26,15 +25,7 @@ RESTART_MESSAGE = (
     "⚡ What will you do next? Your fate is in your hands. Choose an option below to decide your path:"
 )
 
-
-SETTINGS_MESSAGE = (
-    "⚙️ <b>Settings</b>\n\n"
-    "Here you can configure your preferences:\n\n"
-    "🔔 Enable/Disable Notifications\n"
-    "🌐 Change Language\n"
-    "🔄 Reset Progress\n\n"
-    "Select an option below to manage your account."
-)
+SETTINGS_MESSAGE = "⚙️ <b>Settings</b>\n\nThis section is under development. Stay tuned!"
 
 @error_handler_decorator
 async def start(_, message: Message):
@@ -59,91 +50,80 @@ async def start(_, message: Message):
         # New player: create and prompt to start adventure
         player = Player(user_id=user_id, name=user_name)
         await save_player(player.user_id, player)
+
+        # Send image first, without the caption
+        sent_message = await message.reply_photo(
+            photo='https://files.catbox.moe/pei3tl.jpg'
+        )
+
+        # Now type out the text with the typing effect
+        typing_text = (
+            "🌴🏝️ <b>Welcome to Island Survival Bot!</b> 🏝️🌴\n\n"
+            "You're marooned on a mysterious, untamed island where adventure awaits at every turn! 🌊🐚\n\n"
+            "💡 <b>Your Goal:</b> Survive, thrive, and uncover the island's secrets. 🌟\n\n"
+            "🌟 Will you explore the dense jungles, brave the wild animals, or uncover hidden treasures?\n\n"
+            "🧭 <b>Your journey begins now.</b> Are you ready to face the unknown? Let's get started!"
+        )
+
+        # Send the message word by word with a delay
+        message_text = ""
+        for word in typing_text.split():
+            message_text += word + " "
+            await sent_message.edit_caption(message_text, parse_mode=ParseMode.HTML)
+            await asyncio.sleep(0.3)  # Typing delay
+
+        # Once the text is fully typed, send the "Explore" button
         keyboard = [
-            [InlineKeyboardButton("🌊 Start Adventure", callback_data='start_adventure')]
+            [InlineKeyboardButton("🌿 Explore", callback_data="explore")]
         ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await message.reply_text(START_MESSAGE, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
+        await sent_message.reply_text(
+            "What will you do next?",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
 
 @error_handler_decorator
-async def show_game_brief(query: CallbackQuery):
-    """Displays the game introduction and adventure options."""
-    game_brief = (
-        "🏝️ <b>Island Survival Adventure</b> 🏝️\n\n"
-        "As a <b>castaway</b>, you must explore the island to find <b>essential items, food,</b> and <b>shelter</b> to survive.\n\n"
-        "🌍 Explore diverse locations like the Beach, Forest, and Mountains.\n"
-        "🔍 Gather resources and manage your health.\n"
-        "⚔️ Beware of dangerous encounters.\n\n"
-        "Choose your adventure below!"
-    )
-    keyboard = [
-        [InlineKeyboardButton("🧭 Solo Expedition", callback_data='solo_arc')],
-        [InlineKeyboardButton("📜 Story Adventure", callback_data='start_narrative_arc')]
+async def start_adventure(query: CallbackQuery):
+    """Handles the start of the adventure with a typing effect."""
+    
+    # Text to simulate typing effect
+    typing_text = [
+        "You", "wake", "up", "on", "a", "desolate", "beach,", "the", "remnants", "of", 
+        "your", "shipwreck", "scattered", "across", "the", "sand.", "🌊",
+        "The", "ocean", "whispers,", "but", "the", "calm", "is", "deceptive—danger", "lurks", 
+        "just", "beyond", "the", "shore.", "🌿", "The", "jungle", "calls,", "promising", 
+        "resources", "and", "hidden", "secrets,", "but", "also", "unknown", "threats.", "⚔️",
+        "Your", "journey", "to", "survive", "begins", "now—gather,", "explore,", "and", 
+        "face", "whatever", "challenges", "this", "island", "throws", "your", "way.", "🏹",
+        "Are", "you", "ready", "to", "survive?", "🏝️"
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(text=game_brief, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
 
-@error_handler_decorator
-async def confirm_new_arc(query: CallbackQuery):
-    """Prompts user to confirm starting a new arc."""
+    message = ""
+
+    # Send the message word by word with a delay
+    for word in typing_text:
+        message += word + " "
+        await query.message.edit_text(message, parse_mode=ParseMode.HTML)
+        await asyncio.sleep(0.3)  # Typing delay
+
+    # After typing is done, send the image and the Explore button
     keyboard = [
-        [InlineKeyboardButton("🏝️ Start Survival Arc", callback_data='start_survival_arc')],
-        [InlineKeyboardButton("📖 Start Narrative Arc (Coming Soon)", callback_data='start_narrative_arc')]
+        [InlineKeyboardButton("🌿 Explore", callback_data="explore")]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.edit_text(
-        "⚠️ Starting a new arc will erase any current progress.\n\n"
-        "Select an arc to proceed.",
-        reply_markup=reply_markup, parse_mode=ParseMode.HTML
+    await query.message.reply_photo(
+        photo='https://files.catbox.moe/3gbv36.jpg',
+        caption="Welcome to your adventure... The island awaits!",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-@error_handler_decorator
-async def start_survival_arc(query: CallbackQuery):
-    """Starts a new Survival Arc."""
-    user_id = query.from_user.id
-    user_name = query.from_user.first_name
-
-    player = Player(user_id=user_id, name=user_name)
-    await save_player(player)
-
-    await query.message.edit_text(
-        "🆕 Starting a new Survival Arc! Let’s see how you fare this time.",
-        parse_mode=ParseMode.HTML
-    )
-    await show_game_brief(query)
-
-@error_handler_decorator
-async def show_narrative_placeholder(query: CallbackQuery):
-    """Shows a placeholder for the narrative arc."""
-    await query.message.edit_text(
-        "📖 <b>Narrative Arc Coming Soon!</b>\n\n"
-        "Get ready for a unique, story-driven adventure where your choices shape the journey.",
-        parse_mode=ParseMode.HTML
-    )
-
-@error_handler_decorator
-async def start_solo_arc(client: Client, query: CallbackQuery):
-    """Starts a Solo Expedition."""
-    user_id = query.from_user.id
-    user_name = query.from_user.first_name
-
-    player = Player(user_id=user_id, name=user_name, arc_type='solo', started_adventure=True)
-    await save_player(player)
-
-    await query.message.edit_text("🧭 Starting Solo Expedition! Let’s see how you fare on your own.")
-    await explore(client, query.message)
 
 @error_handler_decorator
 async def show_settings(query: CallbackQuery):
-    """Displays settings options."""
-    keyboard = [
-        [InlineKeyboardButton("🔔 Toggle Notifications", callback_data='settings_toggle_notifications')],
-        [InlineKeyboardButton("🌐 Change Language", callback_data='settings_change_language')],
-        [InlineKeyboardButton("🔄 Reset Progress", callback_data='settings_reset_progress')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.edit_text(SETTINGS_MESSAGE, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
+    """Displays settings options (currently just a placeholder)."""
+    # Just a basic settings message with no options for now
+    await query.message.edit_text(SETTINGS_MESSAGE, parse_mode=ParseMode.HTML)
 
-
+# Register handlers
 def register(app: Client):
     app.add_handler(MessageHandler(start, filters.command("start")))
+    app.add_handler(CallbackQueryHandler(start_adventure, filters.regex('^start_adventure$')))
+    app.add_handler(CallbackQueryHandler(show_settings, filters.regex('^settings$')))
+    app.add_handler(CallbackQueryHandler(explore, filters.regex('^explore$')))  # Add the explore handler
