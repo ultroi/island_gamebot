@@ -73,6 +73,13 @@ Here’s a list of all available commands:
 | `/stats`       | View your player stats (health, experience, coins, etc.).|
 
 ---
+## 🖱️ Try the Bot Now!
+
+Click the button below to interact with the **Island Game Bot** directly on Telegram:
+
+[Start Island Game Bot](https://t.me/IslandSurvivebot)
+
+---
 
 ## 💻 Installation Guide
 
