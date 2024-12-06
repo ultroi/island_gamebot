@@ -75,9 +75,9 @@ Here’s a list of all available commands:
 ---
 ## 🖱️ Try the Bot Now!
 
-Click the button below to interact with the **Island Game Bot** directly on Telegram:
+Interact with the **Island Game Bot** directly on Telegram:
 
-[Start Island Game Bot](https://t.me/IslandSurvivebot)
+<a href="https://t.me/IslandSurvivebot" target="_blank" style="display: inline-block; padding: 12px 20px; font-size: 16px; color: white; background-color: #4CAF50; text-align: center; border-radius: 5px; text-decoration: none;">Start Island Game Bot</a>
 
 ---
 
