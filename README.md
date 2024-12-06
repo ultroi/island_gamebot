@@ -67,9 +67,8 @@ Here’s a list of all available commands:
 | -------------- | -------------------------------------------------------- |
 | `/start`       | Start the game and view your stats.                       |
 | `/explore`     | Explore the island and find resources or battle animals. |
-| `/inventory`   | View your current inventory and stats.                   |
+| `/inv`         | View your current inventory and stats.                   |
 | `/craft`       | Craft new items using gathered resources.                |
-| `/battle`      | Engage in battle with wild animals or other players.     |
 | `/missions`    | Track your ongoing missions and challenges.              |
 | `/stats`       | View your player stats (health, experience, coins, etc.).|
 
